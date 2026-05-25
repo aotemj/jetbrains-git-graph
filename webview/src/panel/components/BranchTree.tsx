@@ -654,6 +654,30 @@ function BranchContextMenu({
   onClose: () => void;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
+  const [position, setPosition] = useState({ top: y, left: x });
+
+  // Adjust position after render to keep menu within viewport
+  useEffect(() => {
+    const menu = menuRef.current;
+    if (!menu) return;
+    const rect = menu.getBoundingClientRect();
+    const viewportH = window.innerHeight;
+    const viewportW = window.innerWidth;
+
+    let top = y;
+    let left = x;
+
+    // If menu overflows bottom, flip upward or clamp
+    if (top + rect.height > viewportH) {
+      top = Math.max(4, viewportH - rect.height - 4);
+    }
+    // If menu overflows right
+    if (left + rect.width > viewportW) {
+      left = Math.max(4, viewportW - rect.width - 4);
+    }
+
+    setPosition({ top, left });
+  }, [x, y]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -870,14 +894,16 @@ function BranchContextMenu({
       ref={menuRef}
       style={{
         position: "fixed",
-        top: y,
-        left: x,
+        top: position.top,
+        left: position.left,
         zIndex: 9999,
         background: "var(--vscode-menu-background, #252526)",
         border: "1px solid var(--vscode-menu-border, #454545)",
         borderRadius: 4,
         padding: "4px 0",
         minWidth: 160,
+        maxHeight: "calc(100vh - 8px)",
+        overflowY: "auto",
         boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
       }}
     >
