@@ -1,9 +1,9 @@
 {
   "name": "git-brains",
   "displayName": "Just Jet Git",
-  "publisher": "zhycde",
+  "publisher": "autemj",
   "description": "JetBrains-like Git visualization for VS Code",
-  "version": "0.0.5-202605251520",
+  "version": "0.1.0",
   "license": "MIT",
   "icon": "images/icon.png",
   "repository": {
