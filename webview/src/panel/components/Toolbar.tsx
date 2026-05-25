@@ -5,14 +5,14 @@ export function Toolbar() {
   const setFilter = usePanelStore((s) => s.setFilter);
   const filter = usePanelStore((s) => s.filter);
   const commits = usePanelStore((s) => s.commits);
+  const branches = usePanelStore((s) => s.branches);
   const currentBranch = usePanelStore((s) => s.currentBranch);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const historyBranch = filter.branch || currentBranch;
 
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
-  const userBtnRef = useRef<HTMLDivElement>(null);
-  const dateBtnRef = useRef<HTMLDivElement>(null);
+  const [showBranchDropdown, setShowBranchDropdown] = useState(false);
 
   // Collect unique authors from commits
   const authors = useMemo(() => {
@@ -24,6 +24,13 @@ export function Toolbar() {
       a.localeCompare(b, undefined, { sensitivity: "base" }),
     );
   }, [commits]);
+
+  // Collect branch names for filter
+  const branchNames = useMemo(() => {
+    return branches
+      .map((b) => b.name)
+      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  }, [branches]);
 
   const handleSearch = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,16 +55,29 @@ export function Toolbar() {
 
   const handleSelectDate = (range: string) => {
     setShowDateDropdown(false);
-    if (range === filter.dateRange) {
-      setFilter({ dateRange: "" });
-    } else {
-      setFilter({ dateRange: range });
-    }
+    setFilter({ dateRange: range });
   };
 
   const handleClearDate = () => {
     setShowDateDropdown(false);
     setFilter({ dateRange: "" });
+  };
+
+  const handleSelectBranch = (branch: string) => {
+    setShowBranchDropdown(false);
+    setFilter({ branch: branch === filter.branch ? "" : branch });
+  };
+
+  const handleClearBranch = () => {
+    setShowBranchDropdown(false);
+    setFilter({ branch: "" });
+  };
+
+  const dateLabels: Record<string, string> = {
+    today: "Today",
+    "7days": "Last 7 days",
+    "30days": "Last 30 days",
+    "90days": "Last 90 days",
   };
 
   return (
@@ -71,40 +91,47 @@ export function Toolbar() {
         flexShrink: 0,
       }}
     >
-      <input
-        type="text"
+      <SearchInput
         placeholder="Search commits..."
         defaultValue={filter.searchQuery}
         onChange={handleSearch}
-        style={{
-          width: 180,
-          padding: "3px 8px",
-          background: "var(--input-bg)",
-          color: "var(--input-fg)",
-          border: "1px solid var(--input-border)",
-          borderRadius: 2,
-          fontSize: "var(--font-size)",
-          fontFamily: "var(--font-family)",
-          outline: "none",
-        }}
       />
 
-      <span
-        title={historyBranch || "No active branch"}
-        style={{
-          color: "var(--description-fg)",
-          fontSize: "12px",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          maxWidth: 160,
-        }}
-      >
-        Branch: {historyBranch || "-"}
-      </span>
+      {/* Branch filter */}
+      <div style={{ position: "relative" }}>
+        <FilterButton
+          label="Branch"
+          active={!!filter.branch}
+          activeValue={historyBranch}
+          onClick={() => {
+            setShowBranchDropdown(!showBranchDropdown);
+            setShowUserDropdown(false);
+            setShowDateDropdown(false);
+          }}
+        />
+        {showBranchDropdown && (
+          <FilterDropdown onClose={() => setShowBranchDropdown(false)}>
+            {filter.branch && (
+              <DropdownItem
+                label="All branches"
+                active={false}
+                onClick={handleClearBranch}
+              />
+            )}
+            {branchNames.map((name) => (
+              <DropdownItem
+                key={name}
+                label={name}
+                active={name === filter.branch}
+                onClick={() => handleSelectBranch(name)}
+              />
+            ))}
+          </FilterDropdown>
+        )}
+      </div>
 
       {/* User filter */}
-      <div style={{ position: "relative" }} ref={userBtnRef}>
+      <div style={{ position: "relative" }}>
         <FilterButton
           label="User"
           active={!!filter.author}
@@ -112,13 +139,14 @@ export function Toolbar() {
           onClick={() => {
             setShowUserDropdown(!showUserDropdown);
             setShowDateDropdown(false);
+            setShowBranchDropdown(false);
           }}
         />
         {showUserDropdown && (
           <FilterDropdown onClose={() => setShowUserDropdown(false)}>
             {filter.author && (
               <DropdownItem
-                label="Clear filter"
+                label="All users"
                 active={false}
                 onClick={handleClearAuthor}
               />
@@ -136,21 +164,24 @@ export function Toolbar() {
       </div>
 
       {/* Date filter */}
-      <div style={{ position: "relative" }} ref={dateBtnRef}>
+      <div style={{ position: "relative" }}>
         <FilterButton
           label="Date"
           active={!!filter.dateRange}
-          activeValue={filter.dateRange}
+          activeValue={
+            filter.dateRange ? dateLabels[filter.dateRange] : undefined
+          }
           onClick={() => {
             setShowDateDropdown(!showDateDropdown);
             setShowUserDropdown(false);
+            setShowBranchDropdown(false);
           }}
         />
         {showDateDropdown && (
           <FilterDropdown onClose={() => setShowDateDropdown(false)}>
             {filter.dateRange && (
               <DropdownItem
-                label="Clear filter"
+                label="All time"
                 active={false}
                 onClick={handleClearDate}
               />
@@ -186,6 +217,54 @@ export function Toolbar() {
 // Sub-components
 // ---------------------------------------------------------------------------
 
+function SearchInput({
+  placeholder,
+  defaultValue,
+  onChange,
+}: {
+  placeholder: string;
+  defaultValue: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <input
+      type="text"
+      placeholder={placeholder}
+      defaultValue={defaultValue}
+      onChange={onChange}
+      style={{
+        width: 180,
+        padding: "4px 8px",
+        fontSize: "12px",
+        border: "1px solid var(--vscode-input-border, #3c3c3c)",
+        background: "var(--vscode-input-background, #1e1e1e)",
+        color: "var(--vscode-input-foreground, #ccc)",
+        borderRadius: 3,
+        outline: "none",
+        boxSizing: "border-box",
+      }}
+      onFocus={(e) => {
+        (e.target as HTMLElement).style.borderColor =
+          "var(--vscode-focusBorder, #007fd4)";
+      }}
+      onBlur={(e) => {
+        (e.target as HTMLElement).style.borderColor =
+          "var(--vscode-input-border, #3c3c3c)";
+      }}
+      onMouseEnter={(e) => {
+        (e.target as HTMLElement).style.borderColor =
+          "var(--vscode-focusBorder, #007fd4)";
+      }}
+      onMouseLeave={(e) => {
+        if (document.activeElement !== e.target) {
+          (e.target as HTMLElement).style.borderColor =
+            "var(--vscode-input-border, #3c3c3c)";
+        }
+      }}
+    />
+  );
+}
+
 function FilterButton({
   label,
   active,
@@ -215,8 +294,7 @@ function FilterButton({
         userSelect: "none",
       }}
     >
-      {label}
-      {active && activeValue ? `: ${activeValue}` : " ▾"}
+      {active && activeValue ? `${label}: ${activeValue}` : `${label} ▾`}
     </div>
   );
 }
