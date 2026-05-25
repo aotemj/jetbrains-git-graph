@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.2.1] - 2025-05-25
+
+### Added
+- **Show File History command** — right-click a file in editor or Explorer → "IDEA Git: Show File History"
+- Also available from Command Palette
+- Triggers file history view in the Git Log panel
+
+### Changed
+- Command category renamed to "IDEA Git" for easy recognition
+
 ## [0.1.9] - 2025-05-25
 
 ### Added
