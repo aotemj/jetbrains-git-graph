@@ -742,6 +742,18 @@ function BranchContextMenu({
     }
   };
 
+  const handlePush = async () => {
+    onClose();
+    try {
+      await bridge.request("pushBranch", {
+        branchName: branch.name,
+        force: false,
+      });
+    } catch (err) {
+      console.error("Push failed:", err);
+    }
+  };
+
   const handleMerge = async () => {
     onClose();
     const confirmed = confirm(
@@ -814,6 +826,11 @@ function BranchContextMenu({
       items.push({ label: "Rename...", action: handleRename });
     }
     items.push({ label: "Delete", action: handleDelete });
+  }
+
+  if (!branch.isRemote) {
+    items.push({ label: "", action: () => {}, separator: true });
+    items.push({ label: "Push...", action: handlePush });
   }
 
   if (items.length === 0) return null;

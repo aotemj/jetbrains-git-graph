@@ -462,6 +462,14 @@ export class GitService {
     this.invalidateCache();
   }
 
+  async push(branchName: string, force = false): Promise<void> {
+    const args = ["push"];
+    if (force) args.push("--force-with-lease");
+    args.push("origin", branchName);
+    await this.execGit(args);
+    this.invalidateCache();
+  }
+
   invalidateCache(pattern?: string): void {
     this.cache.invalidate(pattern);
   }

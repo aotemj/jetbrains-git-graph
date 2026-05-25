@@ -52,7 +52,8 @@ export type CommandType =
   | "renameBranch"
   | "mergeBranch"
   | "rebaseBranch"
-  | "checkoutAndRebase";
+  | "checkoutAndRebase"
+  | "pushBranch";
 
 export type EventType =
   | "gitStateChanged"
