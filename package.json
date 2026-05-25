@@ -81,7 +81,7 @@
         "command": "git-brains.showFileHistory",
         "title": "Show File History",
         "icon": "$(history)",
-        "category": "JetGit"
+        "category": "IDEA Git"
       }
     ],
     "menus": {
