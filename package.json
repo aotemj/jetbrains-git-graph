@@ -3,12 +3,12 @@
   "displayName": "IntelliJ Git Graph - IDEA Style Branch & Merge",
   "publisher": "autemj",
   "description": "IntelliJ-style Git graph, branch operations, cherry-pick, rebase, and 3-way merge editor for VS Code",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "MIT",
   "icon": "images/icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zhyc9de/jet-git"
+    "url": "https://github.com/aotemj/jetbrains-git-graph"
   },
   "engines": {
     "vscode": "^1.85.0"
