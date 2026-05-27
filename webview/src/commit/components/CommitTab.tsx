@@ -474,6 +474,19 @@ function DirNodeView({
                 className="commit-dir-row"
                 style={{ paddingLeft: `${12 + depth * 16}px` }}
                 onClick={() => toggleDir(child.fullPath)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // Collect all file paths under this directory and trigger delete
+                  const allFiles = collectDirFiles(child);
+                  if (allFiles.length > 0) {
+                    import("../../shared/bridge").then(({ bridge }) => {
+                      bridge.request("deleteFiles", {
+                        filePaths: allFiles.map((f) => f.path),
+                      });
+                    });
+                  }
+                }}
               >
                 <span
                   className={`commit-group-chevron ${isCollapsed ? "collapsed" : ""}`}
@@ -552,6 +565,14 @@ function countFiles(node: DirNode): number {
     count += countFiles(child);
   }
   return count;
+}
+
+function collectDirFiles(node: DirNode): WorkingTreeFile[] {
+  const result: WorkingTreeFile[] = [...node.files];
+  for (const child of node.children) {
+    result.push(...collectDirFiles(child));
+  }
+  return result;
 }
 
 function FolderIcon() {
