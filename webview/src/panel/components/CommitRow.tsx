@@ -199,12 +199,19 @@ export function CommitRow({
             style={{
               display: "inline-flex",
               alignItems: "center",
-              gap: 3,
+              gap: 4,
               flexShrink: 0,
             }}
           >
-            {/* Overlapping tag icons */}
-            <span style={{ display: "inline-flex", marginLeft: -2 }}>
+            {/* Overlapping outline tag icons */}
+            <span
+              style={{
+                display: "inline-flex",
+                position: "relative",
+                width: 14 + Math.max(0, (refItems.length - 1) * 6),
+                height: 14,
+              }}
+            >
               {refItems.map((item, idx) => {
                 const color =
                   REF_ICON_COLORS[item.type] ?? REF_ICON_COLORS.branch;
@@ -215,15 +222,15 @@ export function CommitRow({
                     height="14"
                     viewBox="0 0 16 16"
                     fill="none"
-                    style={{ marginLeft: idx > 0 ? -4 : 0 }}
+                    style={{ position: "absolute", left: idx * 6, top: 0 }}
                   >
                     <path
-                      d="M2 3.5C2 2.67 2.67 2 3.5 2H7.09c.4 0 .78.16 1.06.44l5.41 5.41a1.5 1.5 0 010 2.12l-3.59 3.59a1.5 1.5 0 01-2.12 0L2.44 8.15A1.5 1.5 0 012 7.09V3.5z"
-                      fill={color}
+                      d="M2.5 3.5C2.5 2.95 2.95 2.5 3.5 2.5H7.09c.27 0 .52.1.71.3l5.41 5.41c.39.39.39 1.02 0 1.41l-3.59 3.59c-.39.39-1.02.39-1.41 0L2.79 7.8a1 1 0 01-.29-.71V3.5z"
+                      fill="var(--app-bg, #fff)"
                       stroke={color}
-                      strokeWidth="0.5"
+                      strokeWidth="1.2"
                     />
-                    <circle cx="5" cy="5" r="1" fill="white" />
+                    <circle cx="5" cy="5" r="0.9" fill={color} />
                   </svg>
                 );
               })}
