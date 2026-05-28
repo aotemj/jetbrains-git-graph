@@ -34,8 +34,8 @@ const LOG_FORMAT = [
   "%H", // hash
   "%h", // shortHash
   "%P", // parents (space separated)
-  "%an", // authorName
-  "%ae", // authorEmail
+  "%aN", // authorName (mailmap resolved)
+  "%aE", // authorEmail (mailmap resolved)
   "%aI", // authorDate ISO 8601
   "%s", // subject
   "%b", // body
