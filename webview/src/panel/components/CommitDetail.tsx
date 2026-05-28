@@ -1,6 +1,32 @@
 import { usePanelStore } from "../../shared/store/panel-store";
 import type { Commit } from "../../shared/types/git";
 
+/** Renders text with URLs highlighted as clickable links */
+function Linkify({ text }: { text: string }) {
+  const urlRegex = /(https?:\/\/[^\s<>]+)/g;
+  const parts = text.split(urlRegex);
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        urlRegex.test(part) ? (
+          <a
+            key={`link-${i}-${part.slice(0, 20)}`}
+            href={part}
+            style={{ color: "#3574f0", textDecoration: "none" }}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {part}
+          </a>
+        ) : (
+          <span key={`text-${i}`}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
 function formatDateTime(dateStr: string): string {
   const date = new Date(dateStr);
   if (Number.isNaN(date.getTime())) return dateStr;
@@ -27,7 +53,7 @@ function CommitInfo({ commit }: { commit: Commit }) {
 
   return (
     <div>
-      {/* Commit message */}
+      {/* Commit message - with link highlighting */}
       <div
         style={{
           fontWeight: 600,
@@ -36,7 +62,7 @@ function CommitInfo({ commit }: { commit: Commit }) {
           marginBottom: 4,
         }}
       >
-        {commit.subject}
+        <Linkify text={commit.subject} />
       </div>
       {commit.body && (
         <div
@@ -47,11 +73,11 @@ function CommitInfo({ commit }: { commit: Commit }) {
             marginBottom: 8,
           }}
         >
-          {commit.body}
+          <Linkify text={commit.body} />
         </div>
       )}
 
-      {/* Metadata: hash + author + date in one line */}
+      {/* Metadata: hash + author + email + date */}
       <div
         style={{
           fontSize: "0.92em",
@@ -67,7 +93,14 @@ function CommitInfo({ commit }: { commit: Commit }) {
         >
           {commit.shortHash}
         </span>{" "}
-        {commit.authorName} on {formatDateTime(commit.authorDate)}
+        {commit.authorName}{" "}
+        <a
+          href={`mailto:${commit.authorEmail}`}
+          style={{ color: "#3574f0", textDecoration: "none" }}
+        >
+          &lt;{commit.authorEmail}&gt;
+        </a>{" "}
+        on {formatDateTime(commit.authorDate)}
       </div>
 
       {/* Ref icons + text */}
