@@ -5,7 +5,7 @@ import type { Commit, LaneInfo, RefInfo } from "../../shared/types/git";
 export const ROW_HEIGHT = 28;
 const COLUMN_WIDTH = 10;
 const GRAPH_PADDING = 6;
-const NODE_TEXT_GAP = 8;
+const NODE_TEXT_GAP = 14;
 
 /** Tag icon colors matching IDEA */
 const REF_ICON_COLORS: Record<string, string> = {
