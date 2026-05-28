@@ -57,21 +57,46 @@ export function CommitList({
   );
   const graphWidth = (maxColumn + 1) * COLUMN_WIDTH + GRAPH_PADDING * 2;
 
-  // Compute per-row max column (own column + all line target columns)
+  // Compute per-row max column considering ALL lanes passing through each row
   const rowMaxColumns = useMemo(() => {
     const result: Record<string, number> = {};
+    // Initialize with each commit's own column
     for (const commit of visibleCommits) {
       const lane = graphLayout[commit.hash];
-      if (!lane) {
-        result[commit.hash] = 0;
-        continue;
-      }
-      let maxCol = lane.column;
-      for (const line of lane.lines) {
-        maxCol = Math.max(maxCol, line.toColumn, line.fromColumn);
-      }
-      result[commit.hash] = maxCol;
+      result[commit.hash] = lane?.column ?? 0;
     }
+
+    // Build row index map
+    const rowIndex: Record<string, number> = {};
+    for (let i = 0; i < visibleCommits.length; i++) {
+      rowIndex[visibleCommits[i].hash] = i;
+    }
+
+    // For each commit's lines, mark all rows between source and target
+    for (const commit of visibleCommits) {
+      const lane = graphLayout[commit.hash];
+      if (!lane) continue;
+      const fromRow = rowIndex[commit.hash];
+      if (fromRow == null) continue;
+
+      for (const line of lane.lines) {
+        const toRow = rowIndex[line.toCommit];
+        if (toRow == null) continue;
+
+        const maxCol = Math.max(lane.column, line.toColumn, line.fromColumn);
+        const startRow = Math.min(fromRow, toRow);
+        const endRow = Math.max(fromRow, toRow);
+
+        // Mark all rows this line passes through
+        for (let r = startRow; r <= endRow; r++) {
+          const hash = visibleCommits[r]?.hash;
+          if (hash && (result[hash] ?? 0) < maxCol) {
+            result[hash] = maxCol;
+          }
+        }
+      }
+    }
+
     return result;
   }, [visibleCommits, graphLayout]);
 
