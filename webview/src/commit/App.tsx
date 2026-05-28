@@ -5,10 +5,20 @@ import { IdeaShelfTab } from "./components/IdeaShelfTab";
 import { ShelfTab } from "./components/ShelfTab";
 import "./commit.css";
 
+function ProgressBar({ visible }: { visible: boolean }) {
+  if (!visible) return null;
+  return (
+    <div className="commit-progress-bar">
+      <div className="commit-progress-bar-inner" />
+    </div>
+  );
+}
+
 export function CommitApp() {
   const {
     activeTab,
     setActiveTab,
+    loading,
     fetchChanges,
     fetchShelves,
     fetchIdeaShelves,
@@ -45,6 +55,7 @@ export function CommitApp() {
           Stash
         </button>
       </div>
+      <ProgressBar visible={loading} />
       <div className="commit-content">
         {activeTab === "commit" && <CommitTab />}
         {activeTab === "shelf" && <IdeaShelfTab />}

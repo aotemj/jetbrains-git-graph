@@ -597,3 +597,34 @@
   );
   margin: 4px 0;
 }
+
+/* ─── Progress Bar ─────────────────────────────────────────────── */
+.commit-progress-bar {
+  position: relative;
+  height: 3px;
+  overflow: hidden;
+  background: rgba(0, 122, 204, 0.15);
+  flex-shrink: 0;
+}
+
+.commit-progress-bar-inner {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #007acc 30%,
+    #3794ff 70%,
+    transparent
+  );
+  animation: commit-progress-slide 1s infinite linear;
+}
+
+@keyframes commit-progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}

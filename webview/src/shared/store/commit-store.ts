@@ -109,6 +109,7 @@ export const useCommitStore = create<CommitStore>((set, get) => ({
   collapsedDirs: new Set<string>(),
 
   async fetchChanges() {
+    set({ loading: true });
     try {
       const result = (await bridge.request(
         "getWorkingTreeChanges",
@@ -120,6 +121,8 @@ export const useCommitStore = create<CommitStore>((set, get) => ({
       }
     } catch (err) {
       console.error("fetchChanges failed:", err);
+    } finally {
+      set({ loading: false });
     }
   },
 
