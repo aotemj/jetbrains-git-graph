@@ -72,11 +72,20 @@ export function activate(context: vscode.ExtensionContext) {
 
   // 4. GitService (may be null if no workspace)
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  const allWorkspaceRoots = (vscode.workspace.workspaceFolders ?? []).map(
+    (f) => f.uri.fsPath,
+  );
   let gitService: GitService | null = null;
   let diffManager: DiffEditorManager | null = null;
 
+  // Create GitService instances for all workspace folders
+  const allGitServices: GitService[] = [];
+  for (const root of allWorkspaceRoots) {
+    allGitServices.push(new GitService(root));
+  }
+
   if (workspaceRoot) {
-    gitService = new GitService(workspaceRoot);
+    gitService = allGitServices[0] ?? new GitService(workspaceRoot);
 
     // Register virtual document provider for git file content
     const contentProvider = new GitContentProvider(gitService);
@@ -620,8 +629,19 @@ export function activate(context: vscode.ExtensionContext) {
   // ─── Commit Panel Handlers ───────────────────────────────────────
 
   messageRouter.handle("getWorkingTreeChanges", async () => {
-    if (!gitService) return NOT_GIT_REPO;
-    return gitService.getWorkingTreeChanges();
+    if (allGitServices.length === 0) return NOT_GIT_REPO;
+
+    // Aggregate changes from all workspace folders
+    const allChanges: import("./git/types").WorkingTreeFile[] = [];
+    for (const svc of allGitServices) {
+      try {
+        const changes = await svc.getWorkingTreeChanges();
+        allChanges.push(...changes);
+      } catch {
+        // Skip folders that aren't git repos
+      }
+    }
+    return allChanges;
   });
 
   messageRouter.handle("unstageFile", async (params) => {
