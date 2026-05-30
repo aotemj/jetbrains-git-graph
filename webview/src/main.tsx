@@ -6,6 +6,17 @@ import { MergeStandaloneApp } from "./conflicts/MergeStandaloneApp";
 import { PanelApp } from "./panel/App";
 import "./shared/theme/variables.css";
 
+// Fix Cmd+A/Ctrl+A not working in webview inputs (VS Code intercepts it)
+document.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === "a") {
+    const target = e.target as HTMLElement;
+    if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") {
+      e.stopPropagation();
+      (target as HTMLInputElement).select();
+    }
+  }
+});
+
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
 const mode = root.dataset.mode as

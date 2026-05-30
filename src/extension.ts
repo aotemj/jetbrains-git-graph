@@ -47,30 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
     ),
   );
 
-  // 2b. CommitViewProvider (always registered)
-  const commitProvider = new CommitViewProvider(
-    context.extensionUri,
-    messageRouter,
-  );
-  context.subscriptions.push(
-    vscode.window.registerWebviewViewProvider(
-      CommitViewProvider.viewType,
-      commitProvider,
-      { webviewOptions: { retainContextWhenHidden: true } },
-    ),
-  );
-
-  // 3. MergeEditorManager + ConflictsManager (always created)
-  const mergeManager = new MergeEditorManager(
-    context.extensionUri,
-    messageRouter,
-  );
-  const conflictsManager = new ConflictsManager(
-    context.extensionUri,
-    messageRouter,
-  );
-
-  // 4. GitService (may be null if no workspace)
+  // 2b. Git services for all workspace folders
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   const allWorkspaceRoots = (vscode.workspace.workspaceFolders ?? []).map(
     (f) => f.uri.fsPath,
@@ -78,7 +55,6 @@ export function activate(context: vscode.ExtensionContext) {
   let gitService: GitService | null = null;
   let diffManager: DiffEditorManager | null = null;
 
-  // Create GitService instances for all workspace folders
   const allGitServices: GitService[] = [];
   for (const root of allWorkspaceRoots) {
     allGitServices.push(new GitService(root));
@@ -99,6 +75,30 @@ export function activate(context: vscode.ExtensionContext) {
 
     diffManager = new DiffEditorManager(gitService);
   }
+
+  // 2c. CommitViewProvider (always registered)
+  const commitProvider = new CommitViewProvider(
+    context.extensionUri,
+    messageRouter,
+    allGitServices.map((s) => s.cache),
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      CommitViewProvider.viewType,
+      commitProvider,
+      { webviewOptions: { retainContextWhenHidden: true } },
+    ),
+  );
+
+  // 3. MergeEditorManager + ConflictsManager (always created)
+  const mergeManager = new MergeEditorManager(
+    context.extensionUri,
+    messageRouter,
+  );
+  const conflictsManager = new ConflictsManager(
+    context.extensionUri,
+    messageRouter,
+  );
 
   // 5. Register VSCode commands (always registered)
   context.subscriptions.push(
