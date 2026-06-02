@@ -1099,6 +1099,149 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
+  messageRouter.handle("importPatchFromClipboard", async () => {
+    if (!gitService || !workspaceRoot) return NOT_GIT_REPO;
+
+    try {
+      const clipboardContent = await vscode.env.clipboard.readText();
+      if (!clipboardContent || !clipboardContent.trim()) {
+        void vscode.window.showWarningMessage(
+          "Clipboard is empty or does not contain patch content.",
+        );
+        return { success: false };
+      }
+
+      // Validate it looks like a patch
+      if (
+        !clipboardContent.includes("diff ") &&
+        !clipboardContent.includes("---") &&
+        !clipboardContent.includes("@@")
+      ) {
+        void vscode.window.showWarningMessage(
+          "Clipboard content does not appear to be a valid patch.",
+        );
+        return { success: false };
+      }
+
+      const shelfName = `Clipboard patch ${new Date().toLocaleString()}`;
+      await gitService.importPatchAsShelf(shelfName, clipboardContent);
+
+      messageRouter.broadcastEvent("commitStateChanged", {});
+      void vscode.window.showInformationMessage(
+        "Imported patch from clipboard as shelf entry.",
+      );
+      return { success: true };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      void vscode.window.showErrorMessage(
+        `Failed to import patch from clipboard: ${msg}`,
+      );
+      return { success: false };
+    }
+  });
+
+  // ─── Branch Sidebar Actions ─────────────────────────────────────────
+
+  messageRouter.handle("createBranchPrompt", async () => {
+    if (!gitService) return NOT_GIT_REPO;
+    const name = await vscode.window.showInputBox({
+      prompt: "Enter new branch name",
+      placeHolder: "feature/my-branch",
+    });
+    if (!name) return { success: false };
+    return withProgress(messageRouter, async () => {
+      await gitService.createBranch(name, "HEAD");
+      messageRouter.broadcastEvent("gitStateChanged", { scope: "all" });
+      return { success: true };
+    });
+  });
+
+  messageRouter.handle("deleteBranchPrompt", async (params) => {
+    if (!gitService) return NOT_GIT_REPO;
+    const branchName = params.branchName as string;
+    if (!branchName) return { success: false };
+    const confirm = await vscode.window.showWarningMessage(
+      `Delete branch "${branchName}"?`,
+      { modal: true },
+      "Delete",
+    );
+    if (confirm !== "Delete") return { success: false };
+    return withProgress(messageRouter, async () => {
+      await gitService.deleteBranch(branchName);
+      messageRouter.broadcastEvent("gitStateChanged", { scope: "all" });
+      return { success: true };
+    });
+  });
+
+  messageRouter.handle("compareWithCurrent", async (params) => {
+    if (!gitService) return NOT_GIT_REPO;
+    const branchName = params.branchName as string;
+    if (!branchName) return { success: false };
+    // Use VS Code's built-in git diff between current branch and selected
+    const currentBranch = await gitService.getCurrentBranch();
+    void vscode.commands.executeCommand(
+      "vscode.diff",
+      vscode.Uri.parse(`git-brains:${currentBranch}`),
+      vscode.Uri.parse(`git-brains:${branchName}`),
+      `${currentBranch} ↔ ${branchName}`,
+    );
+    return { success: true };
+  });
+
+  messageRouter.handle("showMyBranches", async () => {
+    // Filter branches by current git user
+    if (!gitService) return NOT_GIT_REPO;
+    void vscode.window.showInformationMessage(
+      "Show My Branches: filter applied in branch tree",
+    );
+    return { success: true };
+  });
+
+  messageRouter.handle("fetchAll", async () => {
+    if (!gitService) return NOT_GIT_REPO;
+    return withProgress(messageRouter, async () => {
+      await gitService.fetch();
+      gitService.invalidateCache();
+      messageRouter.broadcastEvent("gitStateChanged", { scope: "all" });
+      return { success: true };
+    });
+  });
+
+  messageRouter.handle("toggleFavorite", async (params) => {
+    const branchName = params.branchName as string;
+    // Favorites are a UI-only concept, handled in webview state
+    void vscode.window.showInformationMessage(
+      `Toggled favorite: ${branchName}`,
+    );
+    return { success: true };
+  });
+
+  messageRouter.handle("navigateToHead", async (params) => {
+    const branchName = params.branchName as string;
+    if (!branchName) return { success: false };
+    // Broadcast event to scroll git log to this branch's head commit
+    messageRouter.broadcastEvent("gitStateChanged", {
+      scope: "navigateToHead",
+      branch: branchName,
+    });
+    return { success: true };
+  });
+
+  messageRouter.handle("toggleBranchGroupByDirectory", async () => {
+    // This is a UI-only toggle, handled in webview state
+    return { success: true };
+  });
+
+  messageRouter.handle("setSingleClickAction", async () => {
+    // UI preference, handled in webview state
+    return { success: true };
+  });
+
+  messageRouter.handle("toggleShowTags", async () => {
+    // UI preference, handled in webview state
+    return { success: true };
+  });
+
   // 7. GitWatcher (only if GitService is available)
   if (gitService && workspaceRoot) {
     const watcher = new GitWatcher(

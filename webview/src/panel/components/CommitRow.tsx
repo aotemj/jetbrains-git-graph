@@ -129,11 +129,18 @@ export interface ColumnWidths {
   hash: number;
 }
 
+export interface VisibleColumns {
+  author: boolean;
+  date: boolean;
+  hash: boolean;
+}
+
 export function CommitRow({
   commit,
   lane,
   rowMaxColumn,
   columnWidths,
+  visibleColumns,
   onCommitClick,
   onContextMenu,
 }: {
@@ -141,6 +148,7 @@ export function CommitRow({
   lane: LaneInfo | undefined;
   rowMaxColumn: number;
   columnWidths: ColumnWidths;
+  visibleColumns?: VisibleColumns;
   onCommitClick: (event: React.MouseEvent, hash: string) => void;
   onContextMenu?: (event: React.MouseEvent, commit: Commit) => void;
 }) {
@@ -199,103 +207,116 @@ export function CommitRow({
           {commit.subject}
         </span>
         {refItems.length > 0 && (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              flexShrink: 0,
-            }}
-          >
-            {/* Overlapping outline tag icons */}
+          <>
+            <span style={{ flex: 1 }} />
             <span
               style={{
                 display: "inline-flex",
-                position: "relative",
-                width: 14 + Math.max(0, (refItems.length - 1) * 6),
-                height: 14,
+                alignItems: "center",
+                gap: 4,
+                flexShrink: 0,
               }}
             >
-              {refItems.map((item, idx) => {
-                const color =
-                  REF_ICON_COLORS[item.type] ?? REF_ICON_COLORS.branch;
-                return (
-                  <svg
-                    key={item.key}
-                    width="14"
-                    height="14"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    style={{ position: "absolute", left: idx * 6, top: 0 }}
-                  >
-                    <path
-                      d="M2.5 3.5C2.5 2.95 2.95 2.5 3.5 2.5H7.09c.27 0 .52.1.71.3l5.41 5.41c.39.39.39 1.02 0 1.41l-3.59 3.59c-.39.39-1.02.39-1.41 0L2.79 7.8a1 1 0 01-.29-.71V3.5z"
-                      fill="var(--app-bg, #fff)"
-                      stroke={color}
-                      strokeWidth="1.2"
-                    />
-                    <circle cx="5" cy="5" r="0.9" fill={color} />
-                  </svg>
-                );
-              })}
+              {/* Overlapping outline tag icons */}
+              <span
+                style={{
+                  display: "inline-flex",
+                  position: "relative",
+                  width: 14 + Math.max(0, (refItems.length - 1) * 6),
+                  height: 14,
+                }}
+              >
+                {refItems.map((item, idx) => {
+                  const color =
+                    REF_ICON_COLORS[item.type] ?? REF_ICON_COLORS.branch;
+                  return (
+                    <svg
+                      key={item.key}
+                      width="14"
+                      height="14"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      style={{ position: "absolute", left: idx * 6, top: 0 }}
+                    >
+                      <path
+                        d="M2.5 3.5C2.5 2.95 2.95 2.5 3.5 2.5H7.09c.27 0 .52.1.71.3l5.41 5.41c.39.39.39 1.02 0 1.41l-3.59 3.59c-.39.39-1.02.39-1.41 0L2.79 7.8a1 1 0 01-.29-.71V3.5z"
+                        fill="var(--app-bg, #fff)"
+                        stroke={color}
+                        strokeWidth="1.2"
+                      />
+                      <circle cx="5" cy="5" r="0.9" fill={color} />
+                    </svg>
+                  );
+                })}
+              </span>
+              {/* Text labels (skip HEAD text) */}
+              <span
+                style={{
+                  fontSize: "0.8em",
+                  whiteSpace: "nowrap",
+                  opacity: 0.85,
+                }}
+              >
+                {refItems
+                  .filter((item) => item.type !== "HEAD")
+                  .map((item) => item.label)
+                  .join("  ")}
+              </span>
             </span>
-            {/* Text labels (skip HEAD text) */}
-            <span
-              style={{ fontSize: "0.8em", whiteSpace: "nowrap", opacity: 0.85 }}
-            >
-              {refItems
-                .filter((item) => item.type !== "HEAD")
-                .map((item) => item.label)
-                .join("  ")}
-            </span>
-          </span>
+          </>
         )}
       </span>
 
       {/* Author column */}
-      <span
-        style={{
-          flexShrink: 0,
-          width: columnWidths.author,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          opacity: 0.7,
-          paddingLeft: 8,
-        }}
-      >
-        {commit.authorName}
-      </span>
+      {visibleColumns?.author !== false && (
+        <span
+          style={{
+            flexShrink: 0,
+            width: columnWidths.author,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            opacity: 0.7,
+            paddingLeft: 8,
+          }}
+        >
+          {commit.authorName}
+        </span>
+      )}
 
       {/* Date column */}
-      <span
-        style={{
-          flexShrink: 0,
-          width: columnWidths.date,
-          textAlign: "right",
-          opacity: 0.5,
-          paddingLeft: 8,
-        }}
-      >
-        {formatDateTime(commit.authorDate)}
-      </span>
+      {visibleColumns?.date !== false && (
+        <span
+          style={{
+            flexShrink: 0,
+            width: columnWidths.date,
+            textAlign: "right",
+            opacity: 0.5,
+            paddingLeft: 8,
+          }}
+        >
+          {formatDateTime(commit.authorDate)}
+        </span>
+      )}
 
       {/* Hash column */}
-      <span
-        style={{
-          flexShrink: 0,
-          width: columnWidths.hash,
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          whiteSpace: "nowrap",
-          opacity: 0.5,
-          paddingLeft: 8,
-          fontFamily: "monospace",
-          fontSize: "0.9em",
-        }}
-      >
-        {commit.shortHash}
-      </span>
+      {visibleColumns?.hash !== false && (
+        <span
+          style={{
+            flexShrink: 0,
+            width: columnWidths.hash,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            opacity: 0.5,
+            paddingLeft: 8,
+            fontFamily: "monospace",
+            fontSize: "0.9em",
+          }}
+        >
+          {commit.shortHash}
+        </span>
+      )}
     </div>
   );
 }

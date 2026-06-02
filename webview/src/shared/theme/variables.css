@@ -145,3 +145,161 @@ button:disabled {
 .merge-btn-primary:hover:not(:disabled) {
   background: var(--vscode-button-hoverBackground, #1177bb);
 }
+
+/* ─── Panel Toggle Buttons ─────────────────────────────────────── */
+.panel-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--app-fg);
+  cursor: pointer;
+  opacity: 0.6;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+
+.panel-toggle-btn:hover {
+  opacity: 1;
+  background: var(--hover-bg, rgba(0, 0, 0, 0.08));
+}
+
+.panel-toggle-left,
+.panel-toggle-right {
+  align-self: stretch;
+  width: 20px;
+  border-radius: 0;
+  flex-shrink: 0;
+  opacity: 0.4;
+}
+
+.panel-toggle-left {
+  border-right: 1px solid var(--border);
+}
+
+.panel-toggle-right {
+  border-left: 1px solid var(--border);
+}
+
+.panel-toggle-left:hover,
+.panel-toggle-right:hover {
+  opacity: 1;
+  background: var(--hover-bg, rgba(0, 0, 0, 0.08));
+}
+
+/* ─── Panel Toggle Buttons ─────────────────────────────────────── */
+button.panel-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--app-fg);
+  cursor: pointer;
+  opacity: 0.5;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+
+button.panel-toggle-btn:hover {
+  opacity: 1;
+  background: #ededed;
+  color: var(--app-fg);
+}
+
+button.panel-toggle-strip {
+  align-self: stretch;
+  width: 22px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  padding: 0;
+  background: transparent;
+  color: var(--app-fg);
+  opacity: 0.5;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+
+button.panel-toggle-strip:hover {
+  opacity: 1;
+  background: #ededed;
+  color: var(--app-fg);
+}
+
+.panel-toggle-strip-left {
+  border-right: 1px solid var(--border);
+  border-radius: 0;
+}
+
+.panel-toggle-strip-right {
+  border-left: 1px solid var(--border);
+  border-radius: 0;
+}
+
+/* ─── Branch Sidebar ───────────────────────────────────────────── */
+.branch-sidebar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 2px;
+  gap: 2px;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+button.branch-sidebar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--app-fg);
+  cursor: pointer;
+  opacity: 0.6;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+
+button.branch-sidebar-btn:hover:not(:disabled) {
+  opacity: 1;
+  background: #ededed;
+}
+
+button.branch-sidebar-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+.branch-sidebar-separator {
+  width: 18px;
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+.branch-sidebar-spacer {
+  flex: 1;
+}

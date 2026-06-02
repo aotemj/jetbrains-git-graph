@@ -4,7 +4,12 @@ import { useModifierClickSelection } from "../../shared/hooks/useModifierClickSe
 import { usePanelStore } from "../../shared/store/panel-store";
 import type { Commit } from "../../shared/types/git";
 import { CommitContextMenu } from "./CommitContextMenu";
-import { type ColumnWidths, CommitRow, ROW_HEIGHT } from "./CommitRow";
+import {
+  type ColumnWidths,
+  CommitRow,
+  ROW_HEIGHT,
+  type VisibleColumns,
+} from "./CommitRow";
 
 const COLUMN_WIDTH = 16;
 const GRAPH_PADDING = 8;
@@ -31,6 +36,11 @@ export function CommitList({
   const [columnWidths, setColumnWidths] = useState<ColumnWidths>(
     DEFAULT_COLUMN_WIDTHS,
   );
+  const visibleColumns = usePanelStore((s) => s.visibleColumns);
+  const [headerMenu, setHeaderMenu] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
   const columnWidthsRef = useRef(columnWidths);
   columnWidthsRef.current = columnWidths;
 
@@ -181,6 +191,10 @@ export function CommitList({
     >
       {/* Column header with resize handles */}
       <div
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setHeaderMenu({ x: e.clientX, y: e.clientY });
+        }}
         style={{
           display: "flex",
           alignItems: "center",
@@ -195,47 +209,72 @@ export function CommitList({
         }}
       >
         <span style={{ flex: 1, paddingRight: 4 }}>Message</span>
-        <ColumnResizeHandle
-          active={resizing === "author"}
-          onMouseDown={(e) => startResize("author", e)}
-        />
-        <span
-          style={{
-            flexShrink: 0,
-            width: columnWidths.author,
-            paddingLeft: 8,
-          }}
-        >
-          Author
-        </span>
-        <ColumnResizeHandle
-          active={resizing === "date"}
-          onMouseDown={(e) => startResize("date", e)}
-        />
-        <span
-          style={{
-            flexShrink: 0,
-            width: columnWidths.date,
-            textAlign: "right",
-            paddingLeft: 8,
-          }}
-        >
-          Date
-        </span>
-        <ColumnResizeHandle
-          active={resizing === "hash"}
-          onMouseDown={(e) => startResize("hash", e)}
-        />
-        <span
-          style={{
-            flexShrink: 0,
-            width: columnWidths.hash,
-            paddingLeft: 8,
-          }}
-        >
-          Hash
-        </span>
+        {visibleColumns.author && (
+          <>
+            <ColumnResizeHandle
+              active={resizing === "author"}
+              onMouseDown={(e) => startResize("author", e)}
+            />
+            <span
+              style={{
+                flexShrink: 0,
+                width: columnWidths.author,
+                paddingLeft: 8,
+              }}
+            >
+              Author
+            </span>
+          </>
+        )}
+        {visibleColumns.date && (
+          <>
+            <ColumnResizeHandle
+              active={resizing === "date"}
+              onMouseDown={(e) => startResize("date", e)}
+            />
+            <span
+              style={{
+                flexShrink: 0,
+                width: columnWidths.date,
+                textAlign: "right",
+                paddingLeft: 8,
+              }}
+            >
+              Date
+            </span>
+          </>
+        )}
+        {visibleColumns.hash && (
+          <>
+            <ColumnResizeHandle
+              active={resizing === "hash"}
+              onMouseDown={(e) => startResize("hash", e)}
+            />
+            <span
+              style={{
+                flexShrink: 0,
+                width: columnWidths.hash,
+                paddingLeft: 8,
+              }}
+            >
+              Hash
+            </span>
+          </>
+        )}
       </div>
+
+      {/* Column header context menu */}
+      {headerMenu && (
+        <HeaderColumnMenu
+          x={headerMenu.x}
+          y={headerMenu.y}
+          visibleColumns={visibleColumns}
+          onToggle={(col) =>
+            usePanelStore.getState().toggleColumnVisibility(col)
+          }
+          onClose={() => setHeaderMenu(null)}
+        />
+      )}
 
       {/* Scrollable commit list */}
       <div
@@ -274,6 +313,7 @@ export function CommitList({
                   lane={lane}
                   rowMaxColumn={rowMaxColumns[commit.hash] ?? 0}
                   columnWidths={columnWidths}
+                  visibleColumns={visibleColumns}
                   onCommitClick={handleCommitClick}
                   onContextMenu={handleContextMenu}
                 />
@@ -335,6 +375,77 @@ function ColumnResizeHandle({
           transition: "width 0.1s, background 0.1s",
         }}
       />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// HeaderColumnMenu – right-click context menu for toggling column visibility
+// ---------------------------------------------------------------------------
+
+function HeaderColumnMenu({
+  x,
+  y,
+  visibleColumns,
+  onToggle,
+  onClose,
+}: {
+  x: number;
+  y: number;
+  visibleColumns: VisibleColumns;
+  onToggle: (col: keyof VisibleColumns) => void;
+  onClose: () => void;
+}) {
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("mousedown", handleClick, true);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleClick, true);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [onClose]);
+
+  const columns: { key: keyof VisibleColumns; label: string }[] = [
+    { key: "author", label: "Author" },
+    { key: "date", label: "Date" },
+    { key: "hash", label: "Hash" },
+  ];
+
+  return (
+    <div
+      ref={menuRef}
+      className="commit-context-menu"
+      style={{
+        position: "fixed",
+        left: x,
+        top: y,
+        zIndex: 10000,
+      }}
+    >
+      <div className="commit-context-menu-header">Columns</div>
+      {columns.map((col) => (
+        <button
+          key={col.key}
+          type="button"
+          className="commit-context-menu-item"
+          onClick={() => onToggle(col.key)}
+        >
+          <span style={{ width: 16, display: "inline-block" }}>
+            {visibleColumns[col.key] ? "✓" : ""}
+          </span>
+          <span>{col.label}</span>
+        </button>
+      ))}
     </div>
   );
 }

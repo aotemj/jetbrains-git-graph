@@ -83,7 +83,18 @@ export type CommandType =
   | "rebaseAction"
   | "mergeAction"
   | "showErrorNotification"
-  | "openConflictsPanel";
+  | "openConflictsPanel"
+  | "importPatchFromClipboard"
+  | "createBranchPrompt"
+  | "deleteBranchPrompt"
+  | "compareWithCurrent"
+  | "showMyBranches"
+  | "fetchAll"
+  | "toggleFavorite"
+  | "navigateToHead"
+  | "toggleBranchGroupByDirectory"
+  | "setSingleClickAction"
+  | "toggleShowTags";
 
 export interface Bridge {
   request(

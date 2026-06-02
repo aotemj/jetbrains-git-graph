@@ -5,6 +5,7 @@ import { useModifierClickSelection } from "../../shared/hooks/useModifierClickSe
 import { usePreventSelect } from "../../shared/hooks/usePreventSelect";
 import { usePanelStore } from "../../shared/store/panel-store";
 import type { BranchInfo, TagInfo } from "../../shared/types/git";
+import { BranchSidebar as BranchSidebarComponent } from "./BranchSidebar";
 
 // ---------------------------------------------------------------------------
 // Inline SVG Icons (stroke-based, IDEA style)
@@ -222,6 +223,24 @@ function branchesToTree(branches: BranchInfo[]): TreeNode[] {
   );
 }
 
+function branchesToFlatTree(branches: BranchInfo[]): TreeNode[] {
+  const nodes: TreeNode[] = branches.map((b) => ({
+    name: b.name,
+    fullPath: b.name,
+    children: [],
+    branch: b,
+    isLeaf: true,
+  }));
+  // Sort: current branch first, then alphabetical
+  nodes.sort((a, b) => {
+    const aCurrent = !!a.branch?.isCurrent;
+    const bCurrent = !!b.branch?.isCurrent;
+    if (aCurrent !== bCurrent) return aCurrent ? -1 : 1;
+    return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+  });
+  return nodes;
+}
+
 function tagsToTree(tags: TagInfo[]): TreeNode[] {
   return buildTree(
     tags.map((t) => ({
@@ -229,6 +248,16 @@ function tagsToTree(tags: TagInfo[]): TreeNode[] {
       tag: t,
     })),
   );
+}
+
+function tagsToFlatTree(tags: TagInfo[]): TreeNode[] {
+  return tags.map((t) => ({
+    name: t.name,
+    fullPath: t.name,
+    children: [],
+    tag: t,
+    isLeaf: true,
+  }));
 }
 
 // ---------------------------------------------------------------------------
@@ -260,7 +289,12 @@ function collectVisibleLeaves(
 // Components
 // ---------------------------------------------------------------------------
 
-export function BranchTree() {
+export function BranchTree({
+  onTogglePanel,
+}: {
+  headerAction?: React.ReactNode;
+  onTogglePanel?: () => void;
+} = {}) {
   const branches = usePanelStore((s) => s.branches);
   const tags = usePanelStore((s) => s.tags);
   const commits = usePanelStore((s) => s.commits);
@@ -269,6 +303,7 @@ export function BranchTree() {
   const setFilter = usePanelStore((s) => s.setFilter);
   const selectedBranches = usePanelStore((s) => s.selectedBranches);
   const selectBranch = usePanelStore((s) => s.selectBranch);
+  const branchGroupByDirectory = usePanelStore((s) => s.branchGroupByDirectory);
 
   const containerRef = usePreventSelect();
 
@@ -297,6 +332,27 @@ export function BranchTree() {
     setContextMenu(null);
   }, []);
 
+  // Listen for expand-all / collapse-all events from sidebar
+  useEffect(() => {
+    const handleExpandAll = () => {
+      setCollapsed({});
+    };
+    const handleCollapseAll = () => {
+      setCollapsed((prev) => ({
+        ...prev,
+        local: true,
+        remote: true,
+        tags: true,
+      }));
+    };
+    window.addEventListener("branch-tree-expand-all", handleExpandAll);
+    window.addEventListener("branch-tree-collapse-all", handleCollapseAll);
+    return () => {
+      window.removeEventListener("branch-tree-expand-all", handleExpandAll);
+      window.removeEventListener("branch-tree-collapse-all", handleCollapseAll);
+    };
+  }, []);
+
   const toggle = (key: string) => {
     setCurrentBranchRowSelected(false);
     setCollapsed((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -318,7 +374,9 @@ export function BranchTree() {
   const headBranch = localBranches.find((b) => b.isCurrent);
   const headCommit = commits.find((c) => c.refs.some((r) => r.type === "HEAD"));
 
-  const localTreeRaw = branchesToTree(localBranches);
+  const localTreeRaw = branchGroupByDirectory
+    ? branchesToTree(localBranches)
+    : branchesToFlatTree(localBranches);
   // Move the current branch (or folder containing it) to the top
   const localTree = (() => {
     const idx = localTreeRaw.findIndex((node) =>
@@ -330,12 +388,16 @@ export function BranchTree() {
     }
     return localTreeRaw;
   })();
-  const remoteTree = branchesToTree(remoteBranches);
+  const remoteTree = branchGroupByDirectory
+    ? branchesToTree(remoteBranches)
+    : branchesToFlatTree(remoteBranches);
   const filteredTags = tags.filter(
     (t) =>
       !searchQuery || t.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-  const tagTree = tagsToTree(filteredTags);
+  const tagTree = branchGroupByDirectory
+    ? tagsToTree(filteredTags)
+    : tagsToFlatTree(filteredTags);
 
   const allVisibleBranches: string[] = [
     ...(!collapsed.local
@@ -364,208 +426,225 @@ export function BranchTree() {
 
   return (
     <div
-      ref={containerRef}
       style={{
         height: "100%",
-        overflow: "auto",
+        display: "flex",
       }}
     >
-      <div style={{ padding: "4px 8px" }}>
+      <BranchSidebarComponent onTogglePanel={onTogglePanel} />
+      <div
+        ref={containerRef}
+        style={{
+          flex: 1,
+          height: "100%",
+          overflow: "auto",
+        }}
+      >
         <div
           style={{
-            position: "relative",
+            padding: "4px 8px",
             display: "flex",
             alignItems: "center",
+            gap: 4,
           }}
         >
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 16 16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.2"
+          <div
             style={{
-              position: "absolute",
-              left: 7,
-              opacity: 0.5,
-              pointerEvents: "none",
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              flex: 1,
             }}
           >
-            <circle cx="7" cy="7" r="4.5" />
-            <line x1="10.5" y1="10.5" x2="14" y2="14" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Branch or tag"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "4px 24px",
-              fontSize: "12px",
-              border: "1px solid var(--vscode-input-border, #c4c4c4)",
-              background: "var(--vscode-input-background, #1e1e1e)",
-              color: "var(--vscode-input-foreground, #ccc)",
-              borderRadius: 3,
-              outline: "none",
-              boxSizing: "border-box",
-            }}
-            onFocus={(e) => {
-              (e.target as HTMLElement).style.borderColor = "#3574f0";
-            }}
-            onBlur={(e) => {
-              (e.target as HTMLElement).style.borderColor =
-                "var(--vscode-input-border, #c4c4c4)";
-            }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.borderColor = "#3574f0";
-            }}
-            onMouseLeave={(e) => {
-              if (document.activeElement !== e.target) {
-                (e.target as HTMLElement).style.borderColor =
-                  "var(--vscode-input-border, #c4c4c4)";
-              }
-            }}
-          />
-          {searchQuery && (
-            <div
-              onClick={() => setSearchQuery("")}
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.2"
               style={{
                 position: "absolute",
-                right: 4,
-                cursor: "pointer",
-                opacity: 0.6,
-                display: "flex",
-                alignItems: "center",
-                padding: 2,
-                borderRadius: 3,
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.opacity = "1";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.opacity = "0.6";
+                left: 7,
+                opacity: 0.5,
+                pointerEvents: "none",
               }}
             >
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 16 16"
-                fill="currentColor"
+              <circle cx="7" cy="7" r="4.5" />
+              <line x1="10.5" y1="10.5" x2="14" y2="14" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Branch or tag"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "4px 24px",
+                fontSize: "12px",
+                border: "1px solid var(--vscode-input-border, #c4c4c4)",
+                background: "var(--vscode-input-background, #1e1e1e)",
+                color: "var(--vscode-input-foreground, #ccc)",
+                borderRadius: 3,
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+              onFocus={(e) => {
+                (e.target as HTMLElement).style.borderColor = "#3574f0";
+              }}
+              onBlur={(e) => {
+                (e.target as HTMLElement).style.borderColor =
+                  "var(--vscode-input-border, #c4c4c4)";
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.borderColor = "#3574f0";
+              }}
+              onMouseLeave={(e) => {
+                if (document.activeElement !== e.target) {
+                  (e.target as HTMLElement).style.borderColor =
+                    "var(--vscode-input-border, #c4c4c4)";
+                }
+              }}
+            />
+            {searchQuery && (
+              <div
+                onClick={() => setSearchQuery("")}
+                style={{
+                  position: "absolute",
+                  right: 4,
+                  cursor: "pointer",
+                  opacity: 0.6,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: 2,
+                  borderRadius: 3,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.opacity = "1";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.opacity = "0.6";
+                }}
               >
-                <path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z" />
-              </svg>
-            </div>
-          )}
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                >
+                  <path d="M8 8.707l3.646 3.647.708-.707L8.707 8l3.647-3.646-.707-.708L8 7.293 4.354 3.646l-.707.708L7.293 8l-3.646 3.646.707.708L8 8.707z" />
+                </svg>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* HEAD – unified "Current Branch" entry */}
-      {(headBranch || headCommit) && (
-        <div
-          onClick={() => {
-            setCurrentBranchRowSelected(true);
-          }}
-          onDoubleClick={() => {
-            if (headBranch) {
-              handleBranchDoubleClick(headBranch.name);
-            }
-          }}
-          style={{
-            padding: "4px 8px 4px 20px",
-            cursor: "pointer",
-            fontWeight: 600,
-            background: currentBranchRowSelected
-              ? "var(--selected-bg)"
-              : "transparent",
-            color: currentBranchRowSelected
-              ? "var(--selected-fg)"
-              : "var(--description-fg)",
-          }}
-        >
-          Current Branch: {headBranch?.name ?? "detached"}
-        </div>
-      )}
-
-      {/* Local */}
-      <GroupSection
-        title="Local"
-        collapsed={collapsed.local}
-        onToggle={() => toggle("local")}
-      >
-        {localTree.map((node) => (
-          <TreeNodeView
-            key={node.fullPath}
-            node={node}
-            depth={0}
-            groupPrefix="local"
-            currentBranch={currentBranch}
-            selectedBranches={selectedBranches}
-            filteredBranch={filter.branch}
-            onBranchClick={handleClick}
-            onBranchDoubleClick={handleBranchDoubleClick}
-            onBranchContextMenu={handleContextMenu}
-            collapsed={collapsed}
-            onToggle={toggle}
-          />
-        ))}
-      </GroupSection>
-
-      {/* Remote */}
-      <GroupSection
-        title="Remote"
-        collapsed={collapsed.remote}
-        onToggle={() => toggle("remote")}
-      >
-        {remoteTree.map((node) => (
-          <TreeNodeView
-            key={node.fullPath}
-            node={node}
-            depth={0}
-            groupPrefix="remote"
-            currentBranch={currentBranch}
-            selectedBranches={selectedBranches}
-            filteredBranch={filter.branch}
-            onBranchClick={handleClick}
-            onBranchDoubleClick={handleBranchDoubleClick}
-            onBranchContextMenu={handleContextMenu}
-            collapsed={collapsed}
-            onToggle={toggle}
-          />
-        ))}
-      </GroupSection>
-
-      {/* Tags */}
-      <GroupSection
-        title="Tags"
-        collapsed={collapsed.tags}
-        onToggle={() => toggle("tags")}
-      >
-        {tagTree.map((node) => (
-          <TagTreeNodeView
-            key={node.fullPath}
-            node={node}
-            depth={0}
-            groupPrefix="tags"
-            collapsed={collapsed}
-            onToggle={toggle}
-          />
-        ))}
-      </GroupSection>
-
-      {/* Context Menu */}
-      {contextMenu &&
-        createPortal(
-          <BranchContextMenu
-            x={contextMenu.x}
-            y={contextMenu.y}
-            branch={contextMenu.branch}
-            currentBranch={currentBranch}
-            onClose={closeContextMenu}
-          />,
-          document.body,
+        {/* HEAD – unified "Current Branch" entry */}
+        {(headBranch || headCommit) && (
+          <div
+            onClick={() => {
+              setCurrentBranchRowSelected(true);
+            }}
+            onDoubleClick={() => {
+              if (headBranch) {
+                handleBranchDoubleClick(headBranch.name);
+              }
+            }}
+            style={{
+              padding: "4px 8px 4px 20px",
+              cursor: "pointer",
+              fontWeight: 600,
+              background: currentBranchRowSelected
+                ? "var(--selected-bg)"
+                : "transparent",
+              color: currentBranchRowSelected
+                ? "var(--selected-fg)"
+                : "var(--description-fg)",
+            }}
+          >
+            Current Branch: {headBranch?.name ?? "detached"}
+          </div>
         )}
+
+        {/* Local */}
+        <GroupSection
+          title="Local"
+          collapsed={collapsed.local}
+          onToggle={() => toggle("local")}
+        >
+          {localTree.map((node) => (
+            <TreeNodeView
+              key={node.fullPath}
+              node={node}
+              depth={0}
+              groupPrefix="local"
+              currentBranch={currentBranch}
+              selectedBranches={selectedBranches}
+              filteredBranch={filter.branch}
+              onBranchClick={handleClick}
+              onBranchDoubleClick={handleBranchDoubleClick}
+              onBranchContextMenu={handleContextMenu}
+              collapsed={collapsed}
+              onToggle={toggle}
+            />
+          ))}
+        </GroupSection>
+
+        {/* Remote */}
+        <GroupSection
+          title="Remote"
+          collapsed={collapsed.remote}
+          onToggle={() => toggle("remote")}
+        >
+          {remoteTree.map((node) => (
+            <TreeNodeView
+              key={node.fullPath}
+              node={node}
+              depth={0}
+              groupPrefix="remote"
+              currentBranch={currentBranch}
+              selectedBranches={selectedBranches}
+              filteredBranch={filter.branch}
+              onBranchClick={handleClick}
+              onBranchDoubleClick={handleBranchDoubleClick}
+              onBranchContextMenu={handleContextMenu}
+              collapsed={collapsed}
+              onToggle={toggle}
+            />
+          ))}
+        </GroupSection>
+
+        {/* Tags */}
+        <GroupSection
+          title="Tags"
+          collapsed={collapsed.tags}
+          onToggle={() => toggle("tags")}
+        >
+          {tagTree.map((node) => (
+            <TagTreeNodeView
+              key={node.fullPath}
+              node={node}
+              depth={0}
+              groupPrefix="tags"
+              collapsed={collapsed}
+              onToggle={toggle}
+            />
+          ))}
+        </GroupSection>
+
+        {/* Context Menu */}
+        {contextMenu &&
+          createPortal(
+            <BranchContextMenu
+              x={contextMenu.x}
+              y={contextMenu.y}
+              branch={contextMenu.branch}
+              currentBranch={currentBranch}
+              onClose={closeContextMenu}
+            />,
+            document.body,
+          )}
+      </div>
     </div>
   );
 }
@@ -968,6 +1047,7 @@ function BranchContextMenu({
     const result = (await bridge.request("showInputBox", {
       prompt: `New branch name (from '${branch.name}'):`,
       placeHolder: "branch-name",
+      value: branch.name,
     })) as { value: string | null };
     if (!result.value || !result.value.trim()) return;
     try {

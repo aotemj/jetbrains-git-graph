@@ -85,7 +85,18 @@ export type CommandType =
   | "getRebaseState"
   | "rebaseAction"
   | "mergeAction"
-  | "openConflictsPanel";
+  | "openConflictsPanel"
+  | "importPatchFromClipboard"
+  | "createBranchPrompt"
+  | "deleteBranchPrompt"
+  | "compareWithCurrent"
+  | "showMyBranches"
+  | "fetchAll"
+  | "toggleFavorite"
+  | "navigateToHead"
+  | "toggleBranchGroupByDirectory"
+  | "setSingleClickAction"
+  | "toggleShowTags";
 
 export type EventType =
   | "gitStateChanged"

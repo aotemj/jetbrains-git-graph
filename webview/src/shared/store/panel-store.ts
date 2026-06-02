@@ -34,11 +34,14 @@ interface PanelStore {
   hoveredColumn: number | null;
   commitFiles: DiffFile[];
   selectedFilePath: string | null;
+  /** Column visibility for the commit list */
+  visibleColumns: { author: boolean; date: boolean; hash: boolean };
   /** When multiple commits are selected, stores the oldest/newest for range diff */
   rangeOldest: string | null;
   rangeNewest: string | null;
   selectedBranches: string[];
   lastSelectedBranch: string | null;
+  branchGroupByDirectory: boolean;
 
   filter: PanelFilter;
   /** Hashes to restore after clearing a filter */
@@ -68,7 +71,9 @@ interface PanelStore {
     allVisibleBranches: string[],
   ) => void;
   setHoveredColumn: (column: number | null) => void;
+  toggleColumnVisibility: (column: "author" | "date" | "hash") => void;
   toggleSequenceCollapse: (sequenceId: string, intermediates: string[]) => void;
+  toggleBranchGroupByDirectory: () => void;
   refresh: () => Promise<void>;
 }
 
@@ -195,10 +200,18 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
   hoveredColumn: null,
   commitFiles: [],
   selectedFilePath: null,
+  visibleColumns: { author: true, date: true, hash: true },
   rangeOldest: null,
   rangeNewest: null,
   selectedBranches: [],
   lastSelectedBranch: null,
+  branchGroupByDirectory: (() => {
+    try {
+      return localStorage.getItem("branchGroupByDirectory") === "true";
+    } catch {
+      return false;
+    }
+  })(),
 
   filter: { searchQuery: "", branch: "", author: "", dateRange: "", file: "" },
   pendingSelectionFromFilter: [],
@@ -536,6 +549,27 @@ export const usePanelStore = create<PanelStore>((set, get) => ({
 
   setHoveredColumn(column: number | null) {
     set({ hoveredColumn: column });
+  },
+
+  toggleColumnVisibility(column: "author" | "date" | "hash") {
+    set((state) => ({
+      visibleColumns: {
+        ...state.visibleColumns,
+        [column]: !state.visibleColumns[column],
+      },
+    }));
+  },
+
+  toggleBranchGroupByDirectory() {
+    set((state) => {
+      const next = !state.branchGroupByDirectory;
+      try {
+        localStorage.setItem("branchGroupByDirectory", String(next));
+      } catch {
+        // ignore
+      }
+      return { branchGroupByDirectory: next };
+    });
   },
 
   toggleSequenceCollapse(sequenceId: string, intermediates: string[]) {
