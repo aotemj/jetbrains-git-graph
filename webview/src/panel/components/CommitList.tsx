@@ -122,6 +122,59 @@ export function CommitList({
     void selectCommit(hash, mode, allVisibleCommitHashes);
   });
 
+  // Keyboard navigation (Arrow Up/Down)
+  const selectedCommitHashes = usePanelStore((s) => s.selectedCommitHashes);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      if (!visibleCommits.length) return;
+
+      // Only handle when no input is focused
+      const active = document.activeElement;
+      if (
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement
+      )
+        return;
+
+      e.preventDefault();
+
+      const currentHash =
+        selectedCommitHashes.length > 0
+          ? selectedCommitHashes[selectedCommitHashes.length - 1]
+          : null;
+      const currentIdx = currentHash
+        ? visibleCommits.findIndex((c) => c.hash === currentHash)
+        : -1;
+
+      let nextIdx: number;
+      if (e.key === "ArrowUp") {
+        nextIdx = currentIdx <= 0 ? 0 : currentIdx - 1;
+      } else {
+        nextIdx =
+          currentIdx >= visibleCommits.length - 1
+            ? visibleCommits.length - 1
+            : currentIdx + 1;
+      }
+
+      const nextHash = visibleCommits[nextIdx].hash;
+      void selectCommit(nextHash, "single", allVisibleCommitHashes);
+
+      // Scroll the selected row into view
+      virtualizer.scrollToIndex(nextIdx, { align: "auto" });
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [
+    visibleCommits,
+    selectedCommitHashes,
+    selectCommit,
+    allVisibleCommitHashes,
+    virtualizer,
+  ]);
+
   const handleScroll = useCallback(() => {
     const el = parentRef.current;
     if (!el) return;
