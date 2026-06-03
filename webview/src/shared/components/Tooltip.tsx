@@ -24,6 +24,7 @@ export function Tooltip({
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(
     null,
   );
+  const [actualPosition, setActualPosition] = useState(position);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -55,7 +56,14 @@ export function Tooltip({
     const gap = 4;
 
     let top: number;
-    if (position === "top") {
+    let actualPosition = position;
+
+    // If position is "top" but there's not enough space above, flip to bottom
+    if (position === "top" && rect.top < 30) {
+      actualPosition = "bottom";
+    }
+
+    if (actualPosition === "top") {
       top = rect.top - gap;
     } else {
       top = rect.bottom + gap;
@@ -65,6 +73,7 @@ export function Tooltip({
     const left = rect.left + rect.width / 2;
 
     setCoords({ top, left });
+    setActualPosition(actualPosition);
   }, [visible, position]);
 
   // Adjust if tooltip overflows viewport
@@ -111,7 +120,7 @@ export function Tooltip({
               top: coords.top,
               left: coords.left,
               transform:
-                position === "top"
+                actualPosition === "top"
                   ? "translate(-50%, -100%)"
                   : "translateX(-50%)",
               zIndex: 99999,
