@@ -922,6 +922,7 @@ function BranchItem({
             marginLeft: 4,
             flexShrink: 0,
             whiteSpace: "nowrap",
+            fontSize: "0.85em",
           }}
         >
           ↙ {behind}
