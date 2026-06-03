@@ -4,5 +4,7 @@ dist
 node_modules
 .vscode-test/
 .vscode/
+.kiro/
+.omc/
 *.vsix
 webview/node_modules
