@@ -1,5 +1,14 @@
 # Changelog / 更新日志
 
+## [0.4.10] - 2026-06-04
+
+### Added / 新增
+- **Create Branch dialog** — replaced native input box with a custom dialog featuring "Checkout branch" and "Overwrite existing branch" checkboxes, matching JetBrains style / 创建分支改为自定义对话框，支持 "Checkout branch" 和 "Overwrite existing branch" 选项
+- **Inline error in Create Branch dialog** — shows git error message (e.g. branch already exists) directly in the dialog instead of only logging to console / 创建分支失败时在对话框内显示错误提示
+
+### Fixed / 修复
+- **Rollback toolbar button** — the Rollback button in the commit panel toolbar now works (was missing onClick handler) / Commit 面板工具栏的 Rollback 按钮现在可以正常使用
+
 ## [0.4.9] - 2026-06-03
 
 ### Added / 新增
