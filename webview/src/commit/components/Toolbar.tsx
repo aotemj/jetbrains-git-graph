@@ -82,15 +82,6 @@ export function Toolbar({
           <DiffIcon />
         </button>
       </Tooltip>
-      <Tooltip text="Push...">
-        <button
-          type="button"
-          className="commit-toolbar-btn"
-          onClick={() => bridge.request("openPushPanel")}
-        >
-          <PushIcon />
-        </button>
-      </Tooltip>
       <Tooltip text="Pull">
         <button
           type="button"
@@ -98,6 +89,15 @@ export function Toolbar({
           onClick={() => bridge.request("pullBranch", {})}
         >
           <PullIcon />
+        </button>
+      </Tooltip>
+      <Tooltip text="Push...">
+        <button
+          type="button"
+          className="commit-toolbar-btn"
+          onClick={() => bridge.request("openPushPanel")}
+        >
+          <PushIcon />
         </button>
       </Tooltip>
 
