@@ -11,12 +11,13 @@ import type { DiffFile } from "../types/git";
 // ---------------------------------------------------------------------------
 
 export const STATUS_COLORS: Record<string, string> = {
-  added: "rgb(7, 114, 23)",
-  modified: "rgb(0, 45, 170)",
-  deleted: "rgb(97, 101, 115)",
-  renamed: "#f0c674",
-  copied: "#f0c674",
-  conflicts: "rgb(217, 26, 41)",
+  added: "var(--vscode-gitDecoration-addedResourceForeground, #587c0c)",
+  modified: "var(--vscode-gitDecoration-modifiedResourceForeground, #3b8eea)",
+  deleted: "var(--vscode-gitDecoration-deletedResourceForeground, #a0a0a0)",
+  renamed: "var(--vscode-gitDecoration-submoduleResourceForeground, #c09553)",
+  copied: "var(--vscode-gitDecoration-submoduleResourceForeground, #c09553)",
+  conflicts:
+    "var(--vscode-gitDecoration-conflictingResourceForeground, #d91a29)",
 };
 
 // ---------------------------------------------------------------------------

@@ -50,13 +50,25 @@
 
 .commit-tab:hover:not(:disabled) {
   opacity: 1;
-  background: #ededed;
+  background: var(
+    --vscode-tab-hoverBackground,
+    var(--vscode-list-hoverBackground, #2a2d2e)
+  );
+  color: var(--vscode-tab-hoverForeground, inherit);
 }
 
 .commit-tab.active {
   opacity: 1;
-  background: #dfe7f5;
-  border: 1px solid #b8cfe6;
+  background: var(
+    --vscode-tab-activeBackground,
+    var(--vscode-button-background, #0e639c)
+  );
+  color: var(
+    --vscode-tab-activeForeground,
+    var(--vscode-button-foreground, #ffffff)
+  );
+  border: 1px solid
+    var(--vscode-tab-activeBorder, var(--vscode-focusBorder, #007fd4));
 }
 
 /* ─── Content ──────────────────────────────────────────────────── */
@@ -408,12 +420,14 @@
 }
 
 .commit-btn-primary {
-  background: var(--vscode-button-background);
-  color: var(--vscode-button-foreground);
+  background: var(--vscode-button-background, #0e639c);
+  color: var(--vscode-button-foreground, #ffffff);
+  border: 1px solid var(--vscode-button-border, transparent);
 }
 
 .commit-btn-primary:hover {
-  background: var(--vscode-button-hoverBackground);
+  background: var(--vscode-button-hoverBackground, #1177bb);
+  border-color: var(--vscode-button-hoverBackground, transparent);
 }
 
 .commit-btn-primary:disabled {
@@ -422,12 +436,27 @@
 }
 
 .commit-btn-secondary {
-  background: var(--vscode-button-secondaryBackground, #ededed);
-  color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
+  background: var(
+    --vscode-button-secondaryBackground,
+    var(--vscode-button-background, #0e639c)
+  );
+  color: var(
+    --vscode-button-secondaryForeground,
+    var(--vscode-button-foreground, #ffffff)
+  );
+  border: 1px solid
+    var(--vscode-button-border, var(--vscode-widget-border, #888));
 }
 
 .commit-btn-secondary:hover:not(:disabled) {
-  background: var(--vscode-button-secondaryHoverBackground, #d4d4d4);
+  background: var(
+    --vscode-button-secondaryHoverBackground,
+    var(--vscode-button-hoverBackground, #1177bb)
+  );
+  border-color: var(
+    --vscode-button-hoverBackground,
+    var(--vscode-focusBorder, #007fd4)
+  );
 }
 
 .commit-btn-secondary:disabled {
