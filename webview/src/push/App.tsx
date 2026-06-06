@@ -1,5 +1,7 @@
 import { Allotment } from "allotment";
 import { useCallback, useEffect, useRef, useState } from "react";
+import CodiconListFlat from "~icons/codicon/list-flat";
+import CodiconListTree from "~icons/codicon/list-tree";
 import { bridge } from "../shared/bridge";
 import { CommitInfo } from "../shared/components/CommitInfo";
 import { FileTree } from "../shared/components/FileTree";
@@ -25,6 +27,8 @@ export function PushApp() {
   const [targetRemote, setTargetRemote] = useState(remoteName);
   const [targetBranch, setTargetBranch] = useState(branchName);
   const [selectorOpen, setSelectorOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"tree" | "flat">("tree");
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   const headerRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -201,6 +205,7 @@ export function PushApp() {
                       padding: "6px 12px",
                       display: "flex",
                       alignItems: "center",
+                      justifyContent: "space-between",
                       flexShrink: 0,
                     }}
                   >
@@ -214,13 +219,55 @@ export function PushApp() {
                     >
                       {files.length} file{files.length !== 1 ? "s" : ""}
                     </span>
+                    <span style={{ display: "flex", gap: 2 }}>
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("tree")}
+                        style={{
+                          background:
+                            viewMode === "tree"
+                              ? "var(--selected-bg)"
+                              : "transparent",
+                          border: "none",
+                          borderRadius: 3,
+                          cursor: "pointer",
+                          padding: "2px 4px",
+                          display: "flex",
+                          alignItems: "center",
+                          color: "inherit",
+                        }}
+                        title="Tree View"
+                      >
+                        <CodiconListTree />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("flat")}
+                        style={{
+                          background:
+                            viewMode === "flat"
+                              ? "var(--selected-bg)"
+                              : "transparent",
+                          border: "none",
+                          borderRadius: 3,
+                          cursor: "pointer",
+                          padding: "2px 4px",
+                          display: "flex",
+                          alignItems: "center",
+                          color: "inherit",
+                        }}
+                        title="Flat List"
+                      >
+                        <CodiconListFlat />
+                      </button>
+                    </span>
                   </div>
                   <div
                     style={{ flex: 1, overflow: "auto", overflowX: "hidden" }}
                   >
                     <FileTree
                       files={files}
-                      viewMode="tree"
+                      viewMode={viewMode}
                       selectedFiles={[]}
                       onFileClick={(_e, file) => {
                         if (selectedHash) {
@@ -231,8 +278,13 @@ export function PushApp() {
                           });
                         }
                       }}
-                      collapsed={{}}
-                      onToggle={() => {}}
+                      collapsed={collapsed}
+                      onToggle={(key) =>
+                        setCollapsed((prev) => ({
+                          ...prev,
+                          [key]: !prev[key],
+                        }))
+                      }
                     />
                   </div>
                 </div>
