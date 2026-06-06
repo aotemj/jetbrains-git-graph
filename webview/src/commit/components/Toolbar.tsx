@@ -347,34 +347,44 @@ function CollapseAllIcon() {
   );
 }
 
-/** Push icon — arrow pointing up to cloud */
+/** Push icon — green ↗ arrow matching branch ahead indicator */
 function PushIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M8 12V3.5" stroke="currentColor" strokeLinecap="round" />
       <path
-        d="M5 5.5L8 2.5L11 5.5"
-        stroke="currentColor"
+        d="M4 12L12 4"
+        stroke="#59a869"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M6 4H12V10"
+        stroke="#59a869"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M3 13.5H13" stroke="currentColor" strokeLinecap="round" />
     </svg>
   );
 }
 
-/** Pull icon — arrow pointing down from cloud */
+/** Pull icon — blue ↙ arrow matching branch behind indicator */
 function PullIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <path d="M8 2.5V11" stroke="currentColor" strokeLinecap="round" />
       <path
-        d="M5 9L8 12L11 9"
-        stroke="currentColor"
+        d="M12 4L4 12"
+        stroke="#6fafbd"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10 12H4V6"
+        stroke="#6fafbd"
+        strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-      <path d="M3 13.5H13" stroke="currentColor" strokeLinecap="round" />
     </svg>
   );
 }
