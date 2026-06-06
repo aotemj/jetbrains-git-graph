@@ -7,19 +7,24 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "watch": "vite build --watch",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest --run"
   },
   "devDependencies": {
     "@iconify/json": "^2.2.439",
     "@svgr/core": "^8.1.0",
     "@svgr/plugin-jsx": "^8.1.0",
+    "@testing-library/react": "^16.3.2",
     "@types/diff": "^8.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
+    "fast-check": "^4.8.0",
+    "jsdom": "^29.1.1",
     "typescript": "~5.9.3",
     "unplugin-icons": "^23.0.1",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "vitest": "^4.1.8"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.18",

@@ -590,11 +590,18 @@ export function activate(context: vscode.ExtensionContext) {
     const remote = (params.remote as string) || "origin";
     const targetBranch = (params.targetBranch as string) || branchName;
     return withProgress(messageRouter, async () => {
-      const output = await gitService.push(branchName, force ?? false, remote, targetBranch);
+      const output = await gitService.push(
+        branchName,
+        force ?? false,
+        remote,
+        targetBranch,
+      );
       messageRouter.broadcastEvent("gitStateChanged", { scope: "all" });
       messageRouter.broadcastEvent("commitStateChanged", {});
       // Return push output so webview can show result toast before closing
-      const isUpToDate = output?.includes("Everything up-to-date") || output?.includes("up to date");
+      const isUpToDate =
+        output?.includes("Everything up-to-date") ||
+        output?.includes("up to date");
       return { success: true, data: { output: output ?? "", isUpToDate } };
     });
   });
@@ -719,10 +726,7 @@ export function activate(context: vscode.ExtensionContext) {
       const timeoutMs = 30_000;
       const dropPromise = gitService.dropCommit(hash);
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Operation timed out")),
-          timeoutMs,
-        ),
+        setTimeout(() => reject(new Error("Operation timed out")), timeoutMs),
       );
 
       await Promise.race([dropPromise, timeoutPromise]);

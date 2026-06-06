@@ -101,7 +101,10 @@ export type CommandType =
   | "getAheadCommits"
   | "getCommitRangeFiles"
   | "executePush"
-  | "openPushPanel";
+  | "openPushPanel"
+  | "getRemoteBranches"
+  | "dropCommit"
+  | "closePushPanel";
 
 export type EventType =
   | "gitStateChanged"
@@ -111,6 +114,11 @@ export type EventType =
   | "operationStart"
   | "operationEnd"
   | "commitStateChanged";
+
+export interface RemoteBranchGroup {
+  remote: string;
+  branches: string[];
+}
 
 export enum ErrorCode {
   GIT_NOT_FOUND = "GIT_NOT_FOUND",

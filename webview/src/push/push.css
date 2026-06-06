@@ -8,6 +8,7 @@
 }
 
 .push-header {
+  position: relative;
   padding: 10px 16px;
   border-bottom: 1px solid var(--border, #333);
   font-size: 13px;
@@ -15,6 +16,27 @@
 
 .push-route {
   opacity: 0.9;
+}
+
+.push-route-target {
+  position: relative;
+}
+
+.push-route-target--interactive {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 3px;
+}
+
+.push-route-target--interactive:hover {
+  opacity: 0.8;
+}
+
+.push-route-target__indicator {
+  margin-left: 4px;
+  vertical-align: middle;
+  opacity: 0.7;
 }
 
 .push-body {
@@ -25,9 +47,8 @@
 }
 
 .push-commits {
-  width: 40%;
-  min-width: 200px;
-  border-right: 1px solid var(--border, #333);
+  min-width: 150px;
+  border-right: none;
   overflow-y: auto;
 }
 
@@ -215,4 +236,244 @@
 
 .push-menu-item:hover {
   background: var(--list-hoverBackground, rgba(255, 255, 255, 0.06));
+}
+
+/* Draggable Split Divider */
+.push-divider {
+  flex-shrink: 0;
+  width: 4px;
+  background: var(--border, #333);
+  cursor: col-resize;
+  position: relative;
+  transition: background 0.15s;
+}
+
+.push-divider:hover {
+  background: var(--vscode-focusBorder, #007fd4);
+}
+
+.push-divider--dragging {
+  background: var(--vscode-focusBorder, #007fd4);
+}
+
+/* Branch Label (clickable affordance) */
+.push-branch-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-underline-offset: 3px;
+  text-decoration-color: var(
+    --vscode-descriptionForeground,
+    rgba(204, 204, 204, 0.5)
+  );
+  border-radius: 3px;
+  padding: 1px 4px;
+  margin: -1px -4px;
+  transition:
+    background 0.15s,
+    opacity 0.15s;
+}
+
+.push-branch-label:hover {
+  background: var(--vscode-toolbar-hoverBackground, rgba(255, 255, 255, 0.06));
+  opacity: 0.85;
+}
+
+.push-branch-label__icon {
+  display: inline-flex;
+  opacity: 0.6;
+  font-size: 10px;
+}
+
+/* Branch Selector Dropdown */
+.push-branch-selector {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: var(--vscode-dropdown-background, #2d2d2d);
+  border: 1px solid var(--vscode-dropdown-border, #555);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.push-branch-group {
+  margin-bottom: 2px;
+}
+
+.push-branch-group__label {
+  padding: 6px 12px 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  opacity: 0.5;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.push-branch-item {
+  display: block;
+  width: 100%;
+  padding: 6px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--vscode-dropdown-foreground, #ccc);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.push-branch-item:hover {
+  background: var(--vscode-list-hoverBackground, rgba(255, 255, 255, 0.06));
+}
+
+.push-branch-item--selected {
+  background: var(--vscode-list-activeSelectionBackground, #094771);
+  color: var(--vscode-list-activeSelectionForeground, #fff);
+}
+
+/* Remote Branch Selector (inline input) */
+.remote-branch-selector {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: var(--app-bg, #2d2d2d);
+  border: 1px solid var(--vscode-focusBorder, #007fd4);
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  padding: 6px 10px;
+}
+
+.remote-branch-selector__input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.remote-branch-selector__remote-label {
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.remote-branch-selector__input {
+  background: var(--vscode-input-background, #3c3c3c);
+  color: var(--vscode-input-foreground, #ccc);
+  border: 1px solid var(--vscode-input-border, #555);
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 13px;
+  font-family: inherit;
+  min-width: 160px;
+  outline: none;
+}
+
+.remote-branch-selector__input:focus {
+  border-color: var(--vscode-focusBorder, #007fd4);
+}
+
+/* Progress Bar */
+.push-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--vscode-progressBar-background, rgba(0, 122, 204, 0.2));
+  overflow: hidden;
+}
+
+.push-progress-bar__track {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #007acc 30%,
+    #3794ff 70%,
+    transparent
+  );
+  animation: push-progress-slide 1.2s infinite linear;
+}
+
+@keyframes push-progress-slide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Toast Notification */
+.push-toast {
+  position: absolute;
+  bottom: 52px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  animation: push-toast-in 0.2s ease-out;
+  z-index: 100;
+  max-width: 320px;
+}
+
+.push-toast--success {
+  background: var(--vscode-editorInfo-background, #063b49);
+  border: 1px solid var(--vscode-editorInfo-border, #007acc);
+  color: var(--vscode-editorInfo-foreground, #d4e9ff);
+}
+
+.push-toast--error {
+  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
+  color: var(--vscode-errorForeground, #f48771);
+}
+
+.push-toast__icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.push-toast__message {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.push-toast__close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.6;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.push-toast__close:hover {
+  opacity: 1;
+}
+
+@keyframes push-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

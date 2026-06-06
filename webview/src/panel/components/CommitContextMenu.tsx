@@ -104,6 +104,25 @@ export function CommitContextMenu({
     top: number;
     left: number;
   } | null>(null);
+  const [isRebasing, setIsRebasing] = useState(false);
+  const [isMerging, setIsMerging] = useState(false);
+
+  // Query rebase/merge state to determine if Drop Commit should be disabled
+  useEffect(() => {
+    const fetchRepoState = async () => {
+      try {
+        const [rebaseState, mergeState] = await Promise.all([
+          bridge.request("getRebaseState") as Promise<{ isRebasing: boolean }>,
+          bridge.request("getMergeState") as Promise<{ isMerging: boolean }>,
+        ]);
+        setIsRebasing(rebaseState?.isRebasing ?? false);
+        setIsMerging(mergeState?.isMerging ?? false);
+      } catch {
+        // If we can't determine state, leave as not disabled
+      }
+    };
+    fetchRepoState();
+  }, []);
 
   // Adjust position after first render
   useEffect(() => {
@@ -252,6 +271,20 @@ export function CommitContextMenu({
     }
   };
 
+  const handleDropCommit = async () => {
+    onClose();
+    try {
+      const result = (await bridge.request("showConfirmMessage", {
+        message: `Drop commit ${shortHash} "${commit.subject}"?\n\nThis will remove the commit from history but keep its changes as unstaged modifications.\n\nThis operation cannot be undone.`,
+        confirmLabel: "Drop Commit",
+      })) as { confirmed: boolean };
+      if (!result.confirmed) return;
+      await bridgeWithProgress("dropCommit", { hash: commit.hash });
+    } catch (err) {
+      console.error("Drop commit failed:", err);
+    }
+  };
+
   const handleNewBranch = async () => {
     onClose();
     if (onCreateBranch) {
@@ -304,11 +337,15 @@ export function CommitContextMenu({
     }, 500);
   };
 
+  // Drop Commit is disabled when in detached HEAD, rebasing, or merging
+  const isDropCommitDisabled = !currentBranch || isRebasing || isMerging;
+
   const items: {
     label: string;
     action: () => void;
     separator?: boolean;
     icon?: React.ReactNode;
+    disabled?: boolean;
   }[] = [
     {
       label: `Copy Revision Number`,
@@ -339,6 +376,12 @@ export function CommitContextMenu({
       icon: <IconRevert />,
     },
     { label: "Revert Commit", action: handleRevert, icon: <IconRevert /> },
+    {
+      label: "Drop Commit",
+      action: handleDropCommit,
+      icon: <IconRevert />,
+      disabled: isDropCommitDisabled,
+    },
     { label: "", action: () => {}, separator: true },
     { label: "New Branch...", action: handleNewBranch, icon: <IconBranch /> },
     { label: "New Tag...", action: handleNewTag, icon: <IconTag /> },
@@ -386,10 +429,11 @@ export function CommitContextMenu({
         ) : (
           <div
             key={item.label}
-            onClick={item.action}
+            onClick={item.disabled ? undefined : item.action}
             style={{
               padding: "6px 12px",
-              cursor: "pointer",
+              cursor: item.disabled ? "default" : "pointer",
+              opacity: item.disabled ? 0.5 : 1,
               color: "var(--vscode-menu-foreground, #333)",
               fontSize: "13px",
               whiteSpace: "nowrap",
@@ -398,10 +442,12 @@ export function CommitContextMenu({
               gap: 8,
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background =
-                "var(--vscode-menu-selectionBackground, #e8f0fe)";
-              (e.currentTarget as HTMLElement).style.color =
-                "var(--vscode-menu-selectionForeground, #333)";
+              if (!item.disabled) {
+                (e.currentTarget as HTMLElement).style.background =
+                  "var(--vscode-menu-selectionBackground, #e8f0fe)";
+                (e.currentTarget as HTMLElement).style.color =
+                  "var(--vscode-menu-selectionForeground, #333)";
+              }
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLElement).style.background = "transparent";

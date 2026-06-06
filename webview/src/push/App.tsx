@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { bridge } from "../shared/bridge";
+import { RemoteBranchSelector } from "./components/RemoteBranchSelector";
+import { useDraggableDivider } from "./hooks/useDraggableDivider";
+import { formatRemoteBranchLabel } from "./utils/branchUtils";
 import "./push.css";
 
 interface CommitInfo {
@@ -17,6 +20,11 @@ interface DiffFile {
   status: string;
 }
 
+type ToastState =
+  | { type: "success"; message: string }
+  | { type: "error"; message: string }
+  | null;
+
 export function PushApp() {
   const root = document.getElementById("root");
   const branchName = root?.dataset.branch ?? "";
@@ -28,6 +36,17 @@ export function PushApp() {
   const [pushing, setPushing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPushMenu, setShowPushMenu] = useState(false);
+  const [toast, setToast] = useState<ToastState>(null);
+
+  // Editable remote branch target state
+  const [targetRemote, setTargetRemote] = useState(remoteName);
+  const [targetBranch, setTargetBranch] = useState(branchName);
+  const [selectorOpen, setSelectorOpen] = useState(false);
+
+  const headerRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const { leftWidthPercent, isDragging, dividerProps } =
+    useDraggableDivider(bodyRef);
 
   useEffect(() => {
     async function load() {
@@ -69,15 +88,49 @@ export function PushApp() {
     async (force = false) => {
       setPushing(true);
       setError(null);
+      setToast(null);
       try {
-        await bridge.request("executePush", { branchName, force });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        const result = (await bridge.request("executePush", {
+          branchName,
+          remote: targetRemote,
+          targetBranch: targetBranch,
+          force,
+        })) as { data?: { output?: string; isUpToDate?: boolean } };
         setPushing(false);
+        const isUpToDate = result?.data?.isUpToDate;
+        const message = isUpToDate
+          ? "Everything is up to date"
+          : `Pushed ${commits.length} commit${commits.length !== 1 ? "s" : ""} to ${targetRemote}/${targetBranch}`;
+        setToast({ type: "success", message });
+        // Auto-close panel after showing toast
+        setTimeout(() => {
+          bridge.request("closePushPanel");
+        }, 2500);
+      } catch (err) {
+        setPushing(false);
+        const msg = err instanceof Error ? err.message : String(err);
+        setError(msg);
+        setToast({ type: "error", message: msg });
+        // Auto-dismiss error toast after 5 seconds
+        setTimeout(() => setToast(null), 5000);
       }
     },
-    [branchName],
+    [branchName, targetRemote, targetBranch, commits.length],
   );
+
+  const handleBranchSelect = useCallback((remote: string, branch: string) => {
+    setTargetRemote(remote);
+    setTargetBranch(branch);
+    setSelectorOpen(false);
+  }, []);
+
+  const handleSelectorClose = useCallback(() => {
+    setSelectorOpen(false);
+  }, []);
+
+  const handleLabelClick = useCallback(() => {
+    setSelectorOpen((prev) => !prev);
+  }, []);
 
   const selectedCommit = commits.find((c) => c.hash === selectedHash);
 
@@ -94,16 +147,49 @@ export function PushApp() {
   return (
     <div className="push-container">
       {/* Header */}
-      <div className="push-header">
+      <div className="push-header" ref={headerRef}>
         <span className="push-route">
-          {branchName} → {remoteName} : {branchName}
+          {branchName} →{" "}
+          <span
+            className="push-route-target push-route-target--interactive"
+            onClick={handleLabelClick}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                handleLabelClick();
+              }
+            }}
+          >
+            {formatRemoteBranchLabel(targetRemote, targetBranch)}
+            <svg
+              className="push-route-target__indicator"
+              width="10"
+              height="10"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polyline points="4,6 8,10 12,6" />
+            </svg>
+          </span>
         </span>
+        {selectorOpen && (
+          <RemoteBranchSelector
+            currentRemote={targetRemote}
+            currentBranch={targetBranch}
+            onSelect={handleBranchSelect}
+            onClose={handleSelectorClose}
+          />
+        )}
       </div>
 
       {/* Main content */}
-      <div className="push-body">
+      <div className="push-body" ref={bodyRef}>
         {/* Left: commit list */}
-        <div className="push-commits">
+        <div className="push-commits" style={{ width: `${leftWidthPercent}%` }}>
           {commits.length === 0 ? (
             <div className="push-empty">No commits to push</div>
           ) : (
@@ -118,6 +204,12 @@ export function PushApp() {
             ))
           )}
         </div>
+
+        {/* Draggable divider */}
+        <div
+          className={`push-divider${isDragging ? " push-divider--dragging" : ""}`}
+          {...dividerProps}
+        />
 
         {/* Right: file list + commit detail */}
         <div className="push-detail">
@@ -179,7 +271,7 @@ export function PushApp() {
         <button
           type="button"
           className="push-btn push-btn-secondary"
-          onClick={() => bridge.request("refreshGitState")}
+          onClick={() => bridge.request("closePushPanel")}
           disabled={pushing}
         >
           Cancel
@@ -232,6 +324,30 @@ export function PushApp() {
           )}
         </div>
       </div>
+
+      {/* Progress bar */}
+      {pushing && (
+        <div className="push-progress-bar">
+          <div className="push-progress-bar__track" />
+        </div>
+      )}
+
+      {/* Toast notification */}
+      {toast && (
+        <div className={`push-toast push-toast--${toast.type}`}>
+          <span className="push-toast__icon">
+            {toast.type === "success" ? "ℹ️" : "❌"}
+          </span>
+          <span className="push-toast__message">{toast.message}</span>
+          <button
+            type="button"
+            className="push-toast__close"
+            onClick={() => setToast(null)}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }

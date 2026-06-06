@@ -100,7 +100,10 @@ export type CommandType =
   | "getAheadCommits"
   | "getCommitRangeFiles"
   | "executePush"
-  | "openPushPanel";
+  | "openPushPanel"
+  | "getRemoteBranches"
+  | "dropCommit"
+  | "closePushPanel";
 
 export interface Bridge {
   request(

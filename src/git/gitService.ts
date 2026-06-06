@@ -209,9 +209,7 @@ export class GitService {
     return branches;
   }
 
-  async getRemoteBranches(): Promise<
-    { remote: string; branches: string[] }[]
-  > {
+  async getRemoteBranches(): Promise<{ remote: string; branches: string[] }[]> {
     const allBranches = await this.getBranches();
     const remoteBranches = allBranches.filter((b) => b.isRemote);
 
@@ -224,7 +222,7 @@ export class GitService {
       if (!groups.has(remote)) {
         groups.set(remote, []);
       }
-      groups.get(remote)!.push(branchName);
+      groups.get(remote)?.push(branchName);
     }
 
     // Sort branches alphabetically within each group (case-insensitive)
@@ -584,7 +582,12 @@ export class GitService {
     this.invalidateCache();
   }
 
-  async push(branchName: string, force = false, remote = "origin", targetBranch?: string): Promise<string> {
+  async push(
+    branchName: string,
+    force = false,
+    remote = "origin",
+    targetBranch?: string,
+  ): Promise<string> {
     const args = ["push"];
     if (force) args.push("--force-with-lease");
     args.push(remote, `${branchName}:${targetBranch || branchName}`);
@@ -729,7 +732,13 @@ export class GitService {
 
     // 3. Stash if dirty
     if (isDirty) {
-      await this.execGit(["stash", "push", "-u", "-m", "drop-commit-autostash"]);
+      await this.execGit([
+        "stash",
+        "push",
+        "-u",
+        "-m",
+        "drop-commit-autostash",
+      ]);
     }
 
     // 4. Execute rebase to remove the commit
