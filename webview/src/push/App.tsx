@@ -1,17 +1,13 @@
+import { Allotment } from "allotment";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { bridge } from "../shared/bridge";
 import { CommitInfo } from "../shared/components/CommitInfo";
-import type { Commit } from "../shared/types/git";
+import { FileTree } from "../shared/components/FileTree";
+import type { Commit, DiffFile } from "../shared/types/git";
 import { RemoteBranchSelector } from "./components/RemoteBranchSelector";
 import { useDraggableDivider } from "./hooks/useDraggableDivider";
 import { formatRemoteBranchLabel } from "./utils/branchUtils";
 import "./push.css";
-
-interface DiffFile {
-  oldPath: string;
-  newPath: string;
-  status: string;
-}
 
 export function PushApp() {
   const root = document.getElementById("root");
@@ -187,47 +183,69 @@ export function PushApp() {
           {...dividerProps}
         />
 
-        {/* Right: file list + commit detail */}
+        {/* Right: file list + commit detail (reusing git log's layout) */}
         <div className="push-detail">
           {selectedCommit && (
-            <>
-              {/* Files */}
-              <div className="push-files">
-                <div className="push-files-header">
-                  {files.length} file{files.length !== 1 ? "s" : ""}
-                </div>
-                {files.map((f) => (
+            <Allotment vertical>
+              <Allotment.Pane minSize={60} preferredSize="40%">
+                <div
+                  style={{
+                    height: "100%",
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
                   <div
-                    key={f.newPath || f.oldPath}
-                    className="push-file-item"
-                    onClick={() => {
-                      if (selectedHash) {
-                        bridge.request("openDiffEditor", {
-                          commit: selectedHash,
-                          filePath: f.newPath || f.oldPath,
-                          file: f,
-                        });
-                      }
+                    style={{
+                      padding: "6px 12px",
+                      display: "flex",
+                      alignItems: "center",
+                      flexShrink: 0,
                     }}
                   >
-                    <span className="push-file-name">
-                      {(f.newPath || f.oldPath).split("/").pop()}
-                    </span>
-                    <span className="push-file-path">
-                      {(f.newPath || f.oldPath)
-                        .split("/")
-                        .slice(0, -1)
-                        .join("/")}
+                    <span
+                      style={{
+                        fontWeight: 600,
+                        fontSize: "0.8em",
+                        opacity: 0.6,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {files.length} file{files.length !== 1 ? "s" : ""}
                     </span>
                   </div>
-                ))}
-              </div>
-
-              {/* Commit info */}
-              <div className="push-commit-info">
-                <CommitInfo commit={selectedCommit} />
-              </div>
-            </>
+                  <div
+                    style={{ flex: 1, overflow: "auto", overflowX: "hidden" }}
+                  >
+                    <FileTree
+                      files={files}
+                      viewMode="tree"
+                      selectedFiles={[]}
+                      onFileClick={(_e, file) => {
+                        if (selectedHash) {
+                          bridge.request("openDiffEditor", {
+                            commit: selectedHash,
+                            filePath: file.newPath || file.oldPath,
+                            file,
+                          });
+                        }
+                      }}
+                      collapsed={{}}
+                      onToggle={() => {}}
+                    />
+                  </div>
+                </div>
+              </Allotment.Pane>
+              <Allotment.Pane minSize={60}>
+                <div style={{ height: "100%", overflow: "auto", padding: 12 }}>
+                  <CommitInfo commit={selectedCommit} />
+                </div>
+              </Allotment.Pane>
+            </Allotment>
+          )}
+          {!selectedCommit && (
+            <div style={{ padding: 12, opacity: 0.5 }}>No commits selected</div>
           )}
         </div>
       </div>
