@@ -42,7 +42,7 @@ const iconColors: Record<string, string> = {
   branch: "#59a869",
   "remote-branch": "#9b7dd4",
   tag: "#c4a000",
-  HEAD: "#e06c75",
+  HEAD: "#c4a000",
 };
 
 /**

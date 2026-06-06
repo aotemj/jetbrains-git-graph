@@ -1,0 +1,24 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /tmp/claude-round-files-diff/hooks/session-start.sh /tmp/claude-round-files-diff/8e13421c/snapshots"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /tmp/claude-round-files-diff/hooks/stop-report.py /tmp/claude-round-files-diff/8e13421c/snapshots"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -13,7 +13,7 @@ const REF_ICON_COLORS: Record<string, string> = {
   branch: "#59a869",
   "remote-branch": "#b07cd8",
   tag: "#e5c07b",
-  HEAD: "#c75450",
+  HEAD: "#e5c07b",
 };
 
 function formatDateTime(dateStr: string): string {
@@ -32,117 +32,15 @@ function buildRefDisplayItems(refs: RefInfo[]): Array<{
   type: RefInfo["type"];
   label: string;
 }> {
-  const branchRef = refs.find((ref) => ref.type === "branch");
-  const hasHead = refs.some((ref) => ref.type === "HEAD");
-  const result: Array<{ key: string; type: RefInfo["type"]; label: string }> =
-    [];
-
-  // Collect all branch names (local and remote)
-  const localBranches: string[] = [];
-  const remoteBranches: string[] = [];
-  const tags: string[] = [];
-
-  for (const ref of refs) {
-    if (ref.type === "HEAD") continue;
-    if (ref.type === "branch") {
-      // Always collect local branches for merge logic
-      localBranches.push(ref.name);
-      continue;
-    }
-    if (ref.type === "remote-branch") {
-      // Skip remote HEAD pointers (e.g. origin/HEAD)
-      if (ref.name.endsWith("/HEAD")) continue;
-      remoteBranches.push(ref.name);
-      continue;
-    }
-    if (ref.type === "tag") {
-      tags.push(ref.name);
-    }
-  }
-
-  // Build merged branch display
-  const displayNames: string[] = [];
-  const usedRemotes = new Set<string>();
-  const usedLocals = new Set<string>();
-
-  for (const local of localBranches) {
-    // Find matching remote (e.g. "origin/prod" matches local "prod")
-    const matchingRemote = remoteBranches.find((rb) => {
-      const baseName = rb.includes("/")
-        ? rb.substring(rb.indexOf("/") + 1)
-        : rb;
-      return baseName === local;
-    });
-    if (matchingRemote) {
-      // Merge: show "origin & branchName" style
-      const remote = matchingRemote.substring(0, matchingRemote.indexOf("/"));
-      displayNames.push(`${remote} & ${local}`);
-      usedRemotes.add(matchingRemote);
-      usedLocals.add(local);
-    }
-  }
-
-  // Add local branches that weren't merged (skip if HEAD covers it)
-  for (const local of localBranches) {
-    if (usedLocals.has(local)) continue;
-    if (hasHead && branchRef?.name === local) continue; // HEAD already represents this
-    displayNames.push(local);
-  }
-
-  // Add remaining remote branches not merged with local
-  for (const rb of remoteBranches) {
-    if (!usedRemotes.has(rb)) {
-      displayNames.push(rb);
-    }
-  }
-
-  // HEAD: show icon only (no text label) in row display
-  if (hasHead) {
-    // HEAD adds one extra icon but no text
-    result.push({ key: "HEAD", type: "HEAD", label: "" });
-    // Ensure the branch name is shown if not already merged with remote
-    if (branchRef && !usedLocals.has(branchRef.name)) {
-      displayNames.unshift(branchRef.name);
-    }
-  }
-
-  // Render branch/remote tags
-  for (const name of displayNames) {
-    const isMerged = name.includes(" & ");
-    const isRemote = name.includes("/");
-    if (isMerged) {
-      // Merged label like "origin & main" needs both remote + local icons
-      result.push({
-        key: `remote:${name}`,
-        type: "remote-branch",
-        label: "",
-      });
-      result.push({
-        key: `branch:${name}`,
-        type: "branch",
-        label: name,
-      });
-    } else if (isRemote) {
-      result.push({
-        key: `branch:${name}`,
-        type: "remote-branch",
-        label: name,
-      });
-    } else {
-      result.push({
-        key: `branch:${name}`,
-        type: "branch",
-        label: name,
-      });
-    }
-  }
-
-  // Tags
-  for (const tag of tags) {
-    result.push({ key: `tag:${tag}`, type: "tag", label: tag });
-  }
-
-  return result;
+  return refs
+    .filter(
+      (ref) => !(ref.type === "remote-branch" && ref.name.endsWith("/HEAD")),
+    )
+    .map((ref, index) => ({
+      key: `${ref.type}:${ref.name}:${index}`,
+      type: ref.type,
+      label: ref.type === "HEAD" ? "" : ref.name,
+    }));
 }
 
 export interface ColumnWidths {
