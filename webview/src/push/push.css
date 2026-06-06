@@ -158,3 +158,58 @@
 .push-btn-secondary:hover:not(:disabled) {
   background: var(--list-hoverBackground, rgba(255, 255, 255, 0.06));
 }
+
+.push-split-btn {
+  display: inline-flex;
+  position: relative;
+}
+
+.push-split-main {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  padding-right: 12px;
+}
+
+.push-split-arrow {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 8px;
+  font-size: 10px;
+}
+
+.push-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+}
+
+.push-menu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 4px;
+  background: var(--app-bg, #2d2d2d);
+  border: 1px solid var(--border, #555);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  min-width: 120px;
+  overflow: hidden;
+}
+
+.push-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  background: none;
+  border: none;
+  color: var(--app-fg, #ccc);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.push-menu-item:hover {
+  background: var(--list-hoverBackground, rgba(255, 255, 255, 0.06));
+}

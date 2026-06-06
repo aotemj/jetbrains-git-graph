@@ -27,6 +27,7 @@ export function PushApp() {
   const [files, setFiles] = useState<DiffFile[]>([]);
   const [pushing, setPushing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPushMenu, setShowPushMenu] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -64,16 +65,19 @@ export function PushApp() {
     load();
   }, [selectedHash]);
 
-  const handlePush = useCallback(async () => {
-    setPushing(true);
-    setError(null);
-    try {
-      await bridge.request("executePush", { branchName });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setPushing(false);
-    }
-  }, [branchName]);
+  const handlePush = useCallback(
+    async (force = false) => {
+      setPushing(true);
+      setError(null);
+      try {
+        await bridge.request("executePush", { branchName, force });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : String(err));
+        setPushing(false);
+      }
+    },
+    [branchName],
+  );
 
   const selectedCommit = commits.find((c) => c.hash === selectedHash);
 
@@ -180,14 +184,44 @@ export function PushApp() {
         >
           Cancel
         </button>
-        <button
-          type="button"
-          className="push-btn push-btn-primary"
-          onClick={handlePush}
-          disabled={pushing || commits.length === 0}
-        >
-          {pushing ? "Pushing..." : "Push"}
-        </button>
+        <div className="push-split-btn">
+          <button
+            type="button"
+            className="push-btn push-btn-primary push-split-main"
+            onClick={() => handlePush(false)}
+            disabled={pushing || commits.length === 0}
+          >
+            {pushing ? "Pushing..." : "Push"}
+          </button>
+          <button
+            type="button"
+            className="push-btn push-btn-primary push-split-arrow"
+            onClick={() => setShowPushMenu(!showPushMenu)}
+            disabled={pushing || commits.length === 0}
+          >
+            ▾
+          </button>
+          {showPushMenu && (
+            <>
+              <div
+                className="push-menu-backdrop"
+                onClick={() => setShowPushMenu(false)}
+              />
+              <div className="push-menu">
+                <button
+                  type="button"
+                  className="push-menu-item"
+                  onClick={() => {
+                    setShowPushMenu(false);
+                    handlePush(true);
+                  }}
+                >
+                  Force Push
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
