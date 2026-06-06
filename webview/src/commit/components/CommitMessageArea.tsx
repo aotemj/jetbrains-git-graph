@@ -177,11 +177,19 @@ export function CommitMessageArea() {
         <div className="commit-dropdown" ref={dropdownRef}>
           <button
             type="button"
-            className="commit-btn commit-btn-secondary"
+            className="commit-btn commit-btn-secondary commit-split-main"
+            disabled={!canCommit}
+            onClick={handleCommitAndPush}
+          >
+            Commit and Push...
+          </button>
+          <button
+            type="button"
+            className="commit-btn commit-btn-secondary commit-split-arrow"
             disabled={!canCommit}
             onClick={() => setShowDropdown(!showDropdown)}
           >
-            Commit and Push...
+            ▾
           </button>
           {showDropdown && (
             <div className="commit-dropdown-menu">

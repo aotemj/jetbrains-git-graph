@@ -551,7 +551,21 @@
 /* ─── Dropdown menu ────────────────────────────────────────────── */
 .commit-dropdown {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+}
+
+.commit-split-main {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.commit-split-arrow {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 4px 6px;
+  font-size: 10px;
+  min-width: 0;
 }
 
 .commit-dropdown-menu {
