@@ -431,15 +431,15 @@
 }
 
 .push-toast--success {
-  background: var(--vscode-editorInfo-background, #063b49);
-  border: 1px solid var(--vscode-editorInfo-border, #007acc);
-  color: var(--vscode-editorInfo-foreground, #d4e9ff);
+  background: var(--vscode-notifications-background, #fff);
+  border: 1px solid var(--vscode-notifications-border, #007acc);
+  color: var(--vscode-notifications-foreground, #333);
 }
 
 .push-toast--error {
-  background: var(--vscode-inputValidation-errorBackground, #5a1d1d);
+  background: var(--vscode-notifications-background, #fff);
   border: 1px solid var(--vscode-inputValidation-errorBorder, #be1100);
-  color: var(--vscode-errorForeground, #f48771);
+  color: var(--vscode-errorForeground, #a1260d);
 }
 
 .push-toast__icon {
