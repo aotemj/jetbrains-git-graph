@@ -25,7 +25,8 @@ export function CommitMessageArea() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const hasSelectedFiles = selectedFiles.size > 0;
-  const canCommit = commitMessage.length > 0 && hasSelectedFiles && !loading;
+  const canCommit =
+    commitMessage.trim().length > 0 && hasSelectedFiles && !loading;
 
   const handleCommit = useCallback(async () => {
     if (!canCommit) return;

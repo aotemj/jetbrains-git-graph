@@ -264,7 +264,7 @@ export const useCommitStore = create<CommitStore>((set, get) => ({
 
   async commit() {
     const { commitMessage, amend, changes, selectedFiles } = get();
-    if (!commitMessage) return false;
+    if (!commitMessage.trim()) return false;
 
     // Get selected file paths (only unstaged ones need to be staged)
     const filesToStage = changes
@@ -291,7 +291,7 @@ export const useCommitStore = create<CommitStore>((set, get) => ({
 
   async commitAndPush() {
     const { commitMessage, amend, changes, selectedFiles } = get();
-    if (!commitMessage) return false;
+    if (!commitMessage.trim()) return false;
 
     const filesToStage = changes
       .filter((f) => !f.staged && selectedFiles.has(`${f.path}:${f.staged}`))

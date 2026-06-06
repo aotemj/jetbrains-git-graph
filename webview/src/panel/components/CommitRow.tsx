@@ -43,6 +43,13 @@ function buildRefDisplayItems(refs: RefInfo[]): Array<{
     }));
 }
 
+function refLabels(refItems: ReturnType<typeof buildRefDisplayItems>): string {
+  return refItems
+    .filter((item) => item.type !== "HEAD")
+    .map((item) => item.label)
+    .join("  ");
+}
+
 export interface ColumnWidths {
   author: number;
   date: number;
@@ -79,6 +86,7 @@ export function CommitRow({
   const isSelected = selectedCommitHashes.includes(commit.hash);
   const col = lane?.column ?? 0;
   const refItems = buildRefDisplayItems(commit.refs);
+  const labels = refLabels(refItems);
 
   return (
     <div
@@ -113,86 +121,99 @@ export function CommitRow({
           overflow: "hidden",
           paddingRight: 8,
           gap: 6,
+          minWidth: 0,
         }}
       >
-        <Tooltip text={commit.subject}>
+        <Tooltip
+          text={commit.subject}
+          style={{
+            flex: "1 1 auto",
+            minWidth: 0,
+            overflow: "hidden",
+          }}
+        >
           <span
             style={{
+              display: "block",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
-              flexShrink: 1,
-              minWidth: 0,
+              width: "100%",
             }}
           >
             {commit.subject}
           </span>
         </Tooltip>
         {refItems.length > 0 && (
-          <>
-            <span style={{ flex: 1 }} />
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              flex: "0 1 auto",
+              minWidth: 14 + Math.max(0, (refItems.length - 1) * 6),
+              maxWidth: "45%",
+              marginLeft: "auto",
+              overflow: "hidden",
+            }}
+          >
+            {/* Overlapping outline tag icons */}
             <span
               style={{
                 display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
+                position: "relative",
+                width: 14 + Math.max(0, (refItems.length - 1) * 6),
+                height: 14,
                 flexShrink: 0,
               }}
             >
-              {/* Overlapping outline tag icons */}
-              <span
-                style={{
-                  display: "inline-flex",
-                  position: "relative",
-                  width: 16 + Math.max(0, (refItems.length - 1) * 5),
-                  height: 16,
-                }}
-              >
-                {refItems.map((item, idx) => {
-                  const color =
-                    REF_ICON_COLORS[item.type] ?? REF_ICON_COLORS.branch;
-                  return (
-                    <svg
-                      key={item.key}
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      style={{ position: "absolute", left: idx * 5, top: 0 }}
-                    >
-                      <path
-                        d="M2.5 3.5C2.5 2.95 2.95 2.5 3.5 2.5H7.09c.27 0 .52.1.71.3l5.41 5.41c.39.39.39 1.02 0 1.41l-3.59 3.59c-.39.39-1.02.39-1.41 0L2.79 7.8a1 1 0 01-.29-.71V3.5z"
-                        fill="var(--app-bg, #fff)"
-                        stroke={color}
-                        strokeWidth="1.2"
-                      />
-                      <circle cx="5" cy="5" r="0.9" fill={color} />
-                    </svg>
-                  );
-                })}
-              </span>
-              {/* Text labels (skip HEAD text) */}
+              {refItems.map((item, idx) => {
+                const color =
+                  REF_ICON_COLORS[item.type] ?? REF_ICON_COLORS.branch;
+                return (
+                  <svg
+                    key={item.key}
+                    width="14"
+                    height="14"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    style={{ position: "absolute", left: idx * 6, top: 0 }}
+                  >
+                    <path
+                      d="M2.5 3.5C2.5 2.95 2.95 2.5 3.5 2.5H7.09c.27 0 .52.1.71.3l5.41 5.41c.39.39.39 1.02 0 1.41l-3.59 3.59c-.39.39-1.02.39-1.41 0L2.79 7.8a1 1 0 01-.29-.71V3.5z"
+                      fill="var(--app-bg, #fff)"
+                      stroke={color}
+                      strokeWidth="1.2"
+                    />
+                    <circle cx="5" cy="5" r="0.9" fill={color} />
+                  </svg>
+                );
+              })}
+            </span>
+            {/* Text labels (skip HEAD text) */}
+            {labels && (
               <Tooltip
-                text={refItems
-                  .filter((item) => item.type !== "HEAD")
-                  .map((item) => item.label)
-                  .join("  ")}
+                text={labels}
+                style={{
+                  minWidth: 0,
+                  overflow: "hidden",
+                }}
               >
                 <span
                   style={{
+                    display: "block",
                     fontSize: "0.8em",
                     whiteSpace: "nowrap",
                     opacity: 0.85,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
-                  {refItems
-                    .filter((item) => item.type !== "HEAD")
-                    .map((item) => item.label)
-                    .join("  ")}
+                  {labels}
                 </span>
               </Tooltip>
-            </span>
-          </>
+            )}
+          </span>
         )}
       </span>
 

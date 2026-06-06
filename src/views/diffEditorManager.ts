@@ -172,6 +172,11 @@ export class DiffEditorManager {
       leftUri,
       rightUri,
       title,
+      {
+        preview: true,
+        preserveFocus: false,
+        viewColumn: vscode.ViewColumn.Active,
+      },
     );
   }
 }

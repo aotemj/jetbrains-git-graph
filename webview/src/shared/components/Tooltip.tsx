@@ -1,4 +1,5 @@
 import {
+  type CSSProperties,
   type ReactNode,
   useCallback,
   useEffect,
@@ -12,6 +13,7 @@ interface TooltipProps {
   children: ReactNode;
   delay?: number;
   position?: "top" | "bottom";
+  style?: CSSProperties;
 }
 
 export function Tooltip({
@@ -19,6 +21,7 @@ export function Tooltip({
   children,
   delay = 300,
   position = "top",
+  style,
 }: TooltipProps) {
   const [visible, setVisible] = useState(false);
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(
@@ -107,6 +110,7 @@ export function Tooltip({
       className="tooltip-wrapper"
       onMouseEnter={show}
       onMouseLeave={hide}
+      style={style}
     >
       {children}
       {visible &&
