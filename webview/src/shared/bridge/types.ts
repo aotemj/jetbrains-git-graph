@@ -111,7 +111,11 @@ export type CommandType =
   | "closePushPanel"
   | "openRollbackPanel"
   | "executeRollback"
-  | "closeRollbackPanel";
+  | "closeRollbackPanel"
+  | "compareWithLocal"
+  | "compareWithLocalClear"
+  | "getCompareWithLocalState"
+  | "showCompareWithLocalDiff";
 
 export interface Bridge {
   request(

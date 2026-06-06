@@ -329,6 +329,23 @@ function FileTreeNodeView({
           gap: 4,
         }}
       >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 16 16"
+          fill="none"
+          style={{
+            flexShrink: 0,
+            transform: isCollapsed ? "rotate(0deg)" : "rotate(90deg)",
+            transition: "transform 0.15s",
+          }}
+        >
+          <path
+            d="M6 11.5L9.5 8L6 4.5"
+            stroke="currentColor"
+            strokeLinecap="round"
+          />
+        </svg>
         {isCollapsed ? (
           <IconFolder
             style={{

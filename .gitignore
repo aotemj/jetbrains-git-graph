@@ -9,4 +9,3 @@ node_modules
 .omc/
 *.vsix
 webview/node_modules
-readme-dev.md
