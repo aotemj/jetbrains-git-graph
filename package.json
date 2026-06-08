@@ -99,9 +99,9 @@
       },
       {
         "command": "git-brains.showFileHistory",
-        "title": "Show File History",
+        "title": "Show File History (JetGit)",
         "icon": "$(history)",
-        "category": "IDEA Git"
+        "category": "JetGit"
       },
       {
         "command": "git-brains.nextDiff",

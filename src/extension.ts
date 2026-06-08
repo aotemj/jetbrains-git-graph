@@ -173,10 +173,12 @@ export function activate(context: vscode.ExtensionContext) {
     ),
     vscode.commands.registerCommand(
       "git-brains.showFileHistory",
-      (uri?: vscode.Uri) => {
+      async (uri?: vscode.Uri) => {
         const fileUri = uri ?? vscode.window.activeTextEditor?.document.uri;
         if (!fileUri || !workspaceRoot) return;
         const relativePath = vscode.workspace.asRelativePath(fileUri, false);
+        // Ensure the Git Log panel is visible before sending the event
+        await vscode.commands.executeCommand("git-brains.gitLog.focus");
         // Send file filter to webview
         messageRouter.broadcastEvent("showFileHistory", {
           file: relativePath,
