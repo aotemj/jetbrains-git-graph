@@ -108,7 +108,10 @@ export type CommandType =
   | "openPushPanel"
   | "getRemoteBranches"
   | "dropCommit"
-  | "closePushPanel";
+  | "closePushPanel"
+  | "openRollbackPanel"
+  | "executeRollback"
+  | "closeRollbackPanel";
 
 export interface Bridge {
   request(

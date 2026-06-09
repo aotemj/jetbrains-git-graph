@@ -112,11 +112,21 @@ export function CommitTab() {
         }}
         onShelve={handleShelveSelected}
         onRollback={() => {
-          const paths = changes
-            .filter((f) => selectedFiles.has(`${f.path}:${f.staged}`))
-            .map((f) => f.path);
-          if (paths.length > 0) {
-            bridge.request("rollbackFiles", { filePaths: paths });
+          // Use highlighted files (click/focus selection), not checkbox selection
+          const highlightedPaths = changes
+            .filter((f) => highlightedFiles.has(`${f.path}:${f.staged}`))
+            .map((f) => ({ path: f.path, status: f.status, staged: f.staged }));
+
+          if (highlightedPaths.length > 0) {
+            bridge.request("openRollbackPanel", { files: highlightedPaths });
+          } else {
+            // No highlighted files: fall back to all working tree change files
+            const allFiles = changes.map((f) => ({
+              path: f.path,
+              status: f.status,
+              staged: f.staged,
+            }));
+            bridge.request("openRollbackPanel", { files: allFiles });
           }
         }}
         hasChanges={changes.length > 0}

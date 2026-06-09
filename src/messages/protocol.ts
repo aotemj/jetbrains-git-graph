@@ -108,7 +108,10 @@ export type CommandType =
   | "openPushPanel"
   | "getRemoteBranches"
   | "dropCommit"
-  | "closePushPanel";
+  | "closePushPanel"
+  | "openRollbackPanel"
+  | "executeRollback"
+  | "closeRollbackPanel";
 
 export type EventType =
   | "gitStateChanged"
@@ -117,7 +120,8 @@ export type EventType =
   | "showFileHistory"
   | "operationStart"
   | "operationEnd"
-  | "commitStateChanged";
+  | "commitStateChanged"
+  | "rollbackPanelInit";
 
 export interface RemoteBranchGroup {
   remote: string;

@@ -14,6 +14,8 @@ import {
 import { GitLogViewProvider } from "./views/gitLogViewProvider";
 import { MergeEditorManager } from "./views/mergeEditorManager";
 import { PushPanel } from "./views/pushPanel";
+import type { RollbackFileInfo } from "./views/rollbackPanel";
+import { RollbackPanel } from "./views/rollbackPanel";
 import { GitWatcher } from "./watchers/gitWatcher";
 
 const NOT_GIT_REPO = { status: "not_git_repo" as const, data: null };
@@ -104,6 +106,9 @@ export function activate(context: vscode.ExtensionContext) {
 
   // 4. PushPanel
   const pushPanel = new PushPanel(context.extensionUri, messageRouter);
+
+  // 4b. RollbackPanel
+  const rollbackPanel = new RollbackPanel(context.extensionUri, messageRouter);
 
   // 5. Register VSCode commands (always registered)
   context.subscriptions.push(
@@ -703,6 +708,59 @@ export function activate(context: vscode.ExtensionContext) {
     const branch = await gitService.getCurrentBranch();
     if (!branch) return { error: "No current branch" };
     pushPanel.open(branch);
+    return { success: true };
+  });
+
+  // ─── Rollback Panel Handlers ───────────────────────────────────────
+
+  messageRouter.handle("openRollbackPanel", async (params) => {
+    const files = params.files as RollbackFileInfo[];
+    rollbackPanel.open(files);
+    return { success: true };
+  });
+
+  messageRouter.handle("executeRollback", async (params) => {
+    if (!gitService) return NOT_GIT_REPO;
+    const filePaths = params.filePaths as string[];
+    const deleteLocalCopies = params.deleteLocalCopies as boolean;
+
+    try {
+      // Get current working tree status to determine each file's state
+      const workingTreeChanges = await gitService.getWorkingTreeChanges();
+      const statusMap = new Map<string, string>();
+      for (const file of workingTreeChanges) {
+        statusMap.set(file.path, file.status);
+      }
+
+      for (const filePath of filePaths) {
+        const status = statusMap.get(filePath) ?? "modified";
+        if (status === "added" || status === "untracked") {
+          if (deleteLocalCopies) {
+            // Delete untracked/added file from filesystem
+            const absPath = vscode.Uri.joinPath(
+              vscode.Uri.file(workspaceRoot!),
+              filePath,
+            );
+            await vscode.workspace.fs.delete(absPath);
+          }
+          // If deleteLocalCopies is false, skip untracked/added files
+        } else {
+          // Revert tracked file changes via git checkout
+          await gitService.rollbackFile(filePath);
+        }
+      }
+
+      messageRouter.broadcastEvent("commitStateChanged", {});
+      rollbackPanel.close();
+      return { success: true };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return { success: false, error: message };
+    }
+  });
+
+  messageRouter.handle("closeRollbackPanel", async () => {
+    rollbackPanel.close();
     return { success: true };
   });
 

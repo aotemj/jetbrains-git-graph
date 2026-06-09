@@ -1,0 +1,168 @@
+/* ─── Rollback Panel ───────────────────────────────────────────── */
+
+.rollback-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-size: 13px;
+  color: var(--app-fg, #ccc);
+  background: var(--app-bg, #1e1e1e);
+}
+
+/* ─── Header ───────────────────────────────────────────────────── */
+
+.rollback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border, #333);
+  flex-shrink: 0;
+}
+
+.rollback-title {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.rollback-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.rollback-view-toggle button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--app-fg, #ccc);
+  cursor: pointer;
+  border-radius: 4px;
+  opacity: 0.6;
+  padding: 0;
+}
+
+.rollback-view-toggle button:hover {
+  background: var(--list-hoverBackground, rgba(255, 255, 255, 0.04));
+  opacity: 0.9;
+}
+
+.rollback-view-toggle button.active {
+  opacity: 1;
+  background: var(--vscode-toolbar-activeBackground, rgba(255, 255, 255, 0.1));
+}
+
+.rollback-view-toggle button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── File List ────────────────────────────────────────────────── */
+
+.rollback-file-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+}
+
+.rollback-file-list input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #3574f0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.rollback-file-list input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ─── Footer ───────────────────────────────────────────────────── */
+
+.rollback-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--border, #333);
+  flex-shrink: 0;
+}
+
+.rollback-delete-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rollback-delete-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #3574f0;
+  cursor: pointer;
+}
+
+.rollback-delete-option input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* ─── Error Message ────────────────────────────────────────────── */
+
+.rollback-error {
+  color: #f44747;
+  font-size: 12px;
+}
+
+/* ─── Action Buttons ───────────────────────────────────────────── */
+
+.rollback-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rollback-btn {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.rollback-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rollback-btn-primary {
+  background: var(--vscode-button-background, #2563eb);
+  color: var(--vscode-button-foreground, #fff);
+}
+
+.rollback-btn-primary:hover:not(:disabled) {
+  background: var(--vscode-button-hoverBackground, #1d4ed8);
+}
+
+.rollback-btn-secondary {
+  background: var(--vscode-button-secondaryBackground, #ededed);
+  color: var(
+    --vscode-button-secondaryForeground,
+    var(--vscode-foreground, #333)
+  );
+  border: none;
+}
+
+.rollback-btn-secondary:hover:not(:disabled) {
+  background: var(--vscode-button-secondaryHoverBackground, #d4d4d4);
+}
