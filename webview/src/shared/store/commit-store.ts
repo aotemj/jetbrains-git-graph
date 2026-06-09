@@ -119,19 +119,13 @@ export const useCommitStore = create<CommitStore>((set, get) => ({
         const newPaths = new Set(result.map((f) => `${f.path}:${f.staged}`));
         const { selectedFiles, changes } = get();
         if (changes.length === 0) {
-          // First load — select all
-          set({ changes: result, selectedFiles: newPaths });
+          // First load — no auto-selection (user manually selects files)
+          set({ changes: result, selectedFiles: new Set<string>() });
         } else {
-          // Refresh — preserve user's selection state
-          // Keep previously selected files that still exist
+          // Refresh — preserve user's selection state (only keep existing selections)
           const preserved = new Set<string>();
           for (const p of selectedFiles) {
             if (newPaths.has(p)) preserved.add(p);
-          }
-          // Auto-select new files that weren't in the previous list
-          const oldPaths = new Set(changes.map((f) => `${f.path}:${f.staged}`));
-          for (const p of newPaths) {
-            if (!oldPaths.has(p)) preserved.add(p);
           }
           set({ changes: result, selectedFiles: preserved });
         }
