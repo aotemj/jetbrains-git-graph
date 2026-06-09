@@ -671,7 +671,7 @@ export class GitService {
   }
 
   async pullRebase(branchName?: string): Promise<void> {
-    const args = ["pull", "--rebase"];
+    const args = ["pull", "--rebase", "--autostash"];
     if (branchName) {
       args.push("origin", branchName);
     }
