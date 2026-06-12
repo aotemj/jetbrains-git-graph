@@ -742,6 +742,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   messageRouter.handle("executeRollback", async (params) => {
     if (!gitService) return NOT_GIT_REPO;
+    if (!workspaceRoot) return NOT_GIT_REPO;
     const filePaths = params.filePaths as string[];
     const deleteLocalCopies = params.deleteLocalCopies as boolean;
 
@@ -759,7 +760,7 @@ export function activate(context: vscode.ExtensionContext) {
           if (deleteLocalCopies) {
             // Delete untracked/added file from filesystem
             const absPath = vscode.Uri.joinPath(
-              vscode.Uri.file(workspaceRoot!),
+              vscode.Uri.file(workspaceRoot),
               filePath,
             );
             await vscode.workspace.fs.delete(absPath);

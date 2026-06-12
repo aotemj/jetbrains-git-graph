@@ -6,6 +6,9 @@
   "version": "0.4.14",
   "license": "MIT",
   "icon": "images/icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aotemj/jetbrains-git-graph"
