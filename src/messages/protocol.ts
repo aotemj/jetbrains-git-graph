@@ -111,7 +111,11 @@ export type CommandType =
   | "closePushPanel"
   | "openRollbackPanel"
   | "executeRollback"
-  | "closeRollbackPanel";
+  | "closeRollbackPanel"
+  | "compareWithLocal"
+  | "compareWithLocalClear"
+  | "getCompareWithLocalState"
+  | "showCompareWithLocalDiff";
 
 export type EventType =
   | "gitStateChanged"
@@ -121,7 +125,8 @@ export type EventType =
   | "operationStart"
   | "operationEnd"
   | "commitStateChanged"
-  | "rollbackPanelInit";
+  | "rollbackPanelInit"
+  | "compareWithLocalChanged";
 
 export interface RemoteBranchGroup {
   remote: string;

@@ -6,6 +6,9 @@
   "version": "0.4.14",
   "license": "MIT",
   "icon": "images/icon.png",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/aotemj/jetbrains-git-graph"
@@ -54,6 +57,11 @@
           "id": "git-brains-commit",
           "title": "Commit",
           "icon": "images/commit-icon.svg"
+        },
+        {
+          "id": "git-brains-compare",
+          "title": "Changes",
+          "icon": "images/changes_dark.svg"
         }
       ]
     },
@@ -70,6 +78,14 @@
           "type": "webview",
           "id": "git-brains.commitPanel",
           "name": "Commit"
+        }
+      ],
+      "git-brains-compare": [
+        {
+          "type": "webview",
+          "id": "git-brains.compareWithLocal",
+          "name": "Changes",
+          "when": "git-brains.compareActive"
         }
       ]
     },

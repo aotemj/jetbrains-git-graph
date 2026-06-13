@@ -308,6 +308,27 @@ export class GitService {
     return parseDiffNameStatus(output);
   }
 
+  /** Get untracked files (not in git index but present on disk) */
+  async getUntrackedFiles(): Promise<string[]> {
+    try {
+      const output = await this.execGit([
+        "ls-files",
+        "--others",
+        "--exclude-standard",
+      ]);
+      return output.trim().split("\n").filter(Boolean);
+    } catch {
+      return [];
+    }
+  }
+
+  /** Get files changed between a commit and the current working tree */
+  async getCompareWithLocalFiles(hash: string): Promise<DiffFile[]> {
+    const output = await this.execGit(["diff", "--name-status", hash]);
+    if (!output.trim()) return [];
+    return parseDiffNameStatus(output);
+  }
+
   async getCommitRangeFiles(hashes: string[]): Promise<DiffFile[]> {
     if (hashes.length === 0) return [];
     if (hashes.length === 1) return this.getCommitFiles(hashes[0]);

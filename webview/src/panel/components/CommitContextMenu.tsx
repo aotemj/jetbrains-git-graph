@@ -199,6 +199,15 @@ export function CommitContextMenu({
 
   const shortHash = commit.shortHash || commit.hash.slice(0, 8);
 
+  const handleCompareWithLocal = async () => {
+    onClose();
+    try {
+      await bridge.request("compareWithLocal", { hash: commit.hash });
+    } catch (err) {
+      console.error("Compare with Local failed:", err);
+    }
+  };
+
   const handleCopyHash = async () => {
     onClose();
     try {
@@ -357,6 +366,26 @@ export function CommitContextMenu({
       label: `Copy Revision Number`,
       action: handleCopyHash,
       icon: <IconCopy />,
+    },
+    {
+      label: "Compare with Local",
+      action: handleCompareWithLocal,
+      icon: (
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M5.85355 8.14645C5.65829 7.95118 5.34171 7.95118 5.14645 8.14645C4.95118 8.34171 4.95118 8.65829 5.14645 8.85355L7.29289 11H0.5C0.223858 11 0 11.2239 0 11.5C0 11.7761 0.223858 12 0.5 12H7.29289L5.14645 14.1464C4.95118 14.3417 4.95118 14.6583 5.14645 14.8536C5.34171 15.0488 5.65829 15.0488 5.85355 14.8536L8.85355 11.8536L9.20711 11.5L8.85355 11.1464L5.85355 8.14645Z"
+            fill="currentColor"
+          />
+          <path
+            fillRule="evenodd"
+            clipRule="evenodd"
+            d="M10.1464 1.14645C10.3417 0.951185 10.6583 0.951185 10.8536 1.14645C11.0488 1.34171 11.0488 1.65829 10.8536 1.85355L8.70711 4H15.5C15.7761 4 16 4.22386 16 4.5C16 4.77614 15.7761 5 15.5 5H8.70711L10.8536 7.14645C11.0488 7.34171 11.0488 7.65829 10.8536 7.85355C10.6583 8.04882 10.3417 8.04882 10.1464 7.85355L7.14645 4.85355L6.79289 4.5L7.14645 4.14645L10.1464 1.14645Z"
+            fill="currentColor"
+          />
+        </svg>
+      ),
     },
     {
       label: "Cherry-Pick",

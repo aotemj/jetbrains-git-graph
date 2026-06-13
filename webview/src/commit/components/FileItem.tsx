@@ -89,17 +89,17 @@ function getStatusLabel(status: WorkingTreeFile["status"]): string {
 function getStatusColor(status: WorkingTreeFile["status"]): string {
   switch (status) {
     case "added":
-      return "rgb(7, 114, 23)";
+      return "var(--vscode-gitDecoration-addedResourceForeground, #587c0c)";
     case "untracked":
-      return "rgb(217, 26, 41)";
+      return "var(--vscode-gitDecoration-untrackedResourceForeground, #d91a29)";
     case "modified":
-      return "rgb(0, 45, 170)";
+      return "var(--vscode-gitDecoration-modifiedResourceForeground, #3b8eea)";
     case "deleted":
-      return "rgb(97, 101, 115)";
+      return "var(--vscode-gitDecoration-deletedResourceForeground, #a0a0a0)";
     case "renamed":
-      return "#f0c674";
+      return "var(--vscode-gitDecoration-submoduleResourceForeground, #c09553)";
     case "conflicted":
-      return "rgb(217, 26, 41)";
+      return "var(--vscode-gitDecoration-conflictingResourceForeground, #d91a29)";
     default:
       return "inherit";
   }

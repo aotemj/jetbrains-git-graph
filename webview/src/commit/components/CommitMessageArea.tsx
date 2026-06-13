@@ -22,6 +22,7 @@ export function CommitMessageArea() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const historyBtnRef = useRef<HTMLSpanElement>(null);
   const historyDropdownRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const hasSelectedFiles = selectedFiles.size > 0;
   const canCommit =
@@ -97,6 +98,7 @@ export function CommitMessageArea() {
   return (
     <div className="commit-message-area">
       <textarea
+        ref={textareaRef}
         className="commit-message-textarea"
         placeholder="Commit message (Ctrl+Enter to commit)"
         value={commitMessage}

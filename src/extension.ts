@@ -5,6 +5,7 @@ import type { DiffFile, LaneSnapshot } from "./git/types";
 import { MessageRouter } from "./messages/messageRouter";
 import { ErrorCode } from "./messages/protocol";
 import { CommitViewProvider } from "./views/commitViewProvider";
+import { CompareViewProvider } from "./views/compareViewProvider";
 import { ConflictsManager } from "./views/conflictsManager";
 import { DiffEditorManager } from "./views/diffEditorManager";
 import {
@@ -19,6 +20,13 @@ import { RollbackPanel } from "./views/rollbackPanel";
 import { GitWatcher } from "./watchers/gitWatcher";
 
 const NOT_GIT_REPO = { status: "not_git_repo" as const, data: null };
+
+/** Stored compare state so webview can retrieve it after lazy-load */
+let storedCompareState: {
+  hash: string;
+  files: import("./git/types").DiffFile[];
+  untrackedFiles: import("./git/types").DiffFile[];
+} | null = null;
 
 /** Temporary storage for shelf diff content (base/modified) */
 const shelfDiffContent = new Map<string, string>();
@@ -90,6 +98,19 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerWebviewViewProvider(
       CommitViewProvider.viewType,
       commitProvider,
+      { webviewOptions: { retainContextWhenHidden: true } },
+    ),
+  );
+
+  // 2d. CompareViewProvider (always registered, shown conditionally via when clause)
+  const compareProvider = new CompareViewProvider(
+    context.extensionUri,
+    messageRouter,
+  );
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      CompareViewProvider.viewType,
+      compareProvider,
       { webviewOptions: { retainContextWhenHidden: true } },
     ),
   );
@@ -721,6 +742,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   messageRouter.handle("executeRollback", async (params) => {
     if (!gitService) return NOT_GIT_REPO;
+    if (!workspaceRoot) return NOT_GIT_REPO;
     const filePaths = params.filePaths as string[];
     const deleteLocalCopies = params.deleteLocalCopies as boolean;
 
@@ -738,7 +760,7 @@ export function activate(context: vscode.ExtensionContext) {
           if (deleteLocalCopies) {
             // Delete untracked/added file from filesystem
             const absPath = vscode.Uri.joinPath(
-              vscode.Uri.file(workspaceRoot!),
+              vscode.Uri.file(workspaceRoot),
               filePath,
             );
             await vscode.workspace.fs.delete(absPath);
@@ -1482,6 +1504,115 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.Uri.parse(`git-brains:${currentBranch}`),
       vscode.Uri.parse(`git-brains:${branchName}`),
       `${currentBranch} ↔ ${branchName}`,
+    );
+    return { success: true };
+  });
+
+  messageRouter.handle("compareWithLocal", async (params) => {
+    if (!gitService || !workspaceRoot) return NOT_GIT_REPO;
+    const hash = params.hash as string;
+    if (!hash) return { success: false, data: null };
+
+    const files = await gitService.getCompareWithLocalFiles(hash);
+    const untrackedPaths = await gitService.getUntrackedFiles();
+    const untrackedFiles: import("./git/types").DiffFile[] = untrackedPaths.map(
+      (p) => ({
+        oldPath: p,
+        newPath: p,
+        status: "added" as const,
+        isBinary: false,
+      }),
+    );
+
+    // Store state BEFORE showing the view, so the webview can retrieve it
+    // even if it lazy-loads after the event is broadcast
+    storedCompareState = { hash, files, untrackedFiles };
+
+    // Show the "Changes" view in the sidebar by setting context key
+    await vscode.commands.executeCommand(
+      "setContext",
+      "git-brains.compareActive",
+      true,
+    );
+
+    // Broadcast event to the Compare webview (may arrive before webview is ready)
+    messageRouter.broadcastEvent("compareWithLocalChanged", {
+      hash,
+      files,
+      untrackedFiles,
+    });
+
+    // Focus the sidebar container
+    void vscode.commands.executeCommand("git-brains.compareWithLocal.focus");
+
+    return { success: true, data: files };
+  });
+
+  messageRouter.handle("getCompareWithLocalState", async () => {
+    return storedCompareState;
+  });
+
+  messageRouter.handle("compareWithLocalClear", async () => {
+    // Clear stored state
+    storedCompareState = null;
+    // Hide the "Changes" view
+    await vscode.commands.executeCommand(
+      "setContext",
+      "git-brains.compareActive",
+      false,
+    );
+    return { success: true };
+  });
+
+  messageRouter.handle("showCompareWithLocalDiff", async (params) => {
+    if (!gitService || !workspaceRoot) return NOT_GIT_REPO;
+    const hash = params.hash as string;
+    const filePath = params.filePath as string;
+    const status = (params.status as string) ?? "modified";
+
+    if (!hash || !filePath) return { success: false };
+
+    const shortHash = hash.substring(0, 7);
+    const fileName = filePath.split("/").pop() ?? filePath;
+
+    let leftUri: vscode.Uri;
+    let rightUri: vscode.Uri;
+
+    switch (status) {
+      case "added":
+        leftUri = vscode.Uri.parse(
+          `${GIT_BRAINS_SCHEME}:/${filePath}?ref=empty`,
+        );
+        rightUri = vscode.Uri.joinPath(
+          vscode.Uri.file(workspaceRoot),
+          filePath,
+        );
+        break;
+      case "deleted":
+        leftUri = vscode.Uri.parse(
+          `${GIT_BRAINS_SCHEME}:/${filePath}?ref=${hash}`,
+        );
+        rightUri = vscode.Uri.parse(
+          `${GIT_BRAINS_SCHEME}:/${filePath}?ref=empty`,
+        );
+        break;
+      default:
+        leftUri = vscode.Uri.parse(
+          `${GIT_BRAINS_SCHEME}:/${filePath}?ref=${hash}`,
+        );
+        rightUri = vscode.Uri.joinPath(
+          vscode.Uri.file(workspaceRoot),
+          filePath,
+        );
+        break;
+    }
+
+    void vscode.commands.executeCommand(
+      "vscode.diff",
+      leftUri,
+      rightUri,
+      `${fileName} (${shortHash} ↔ Local)`,
+      { preview: true, preserveFocus: false },
     );
     return { success: true };
   });

@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { CommitApp } from "./commit/App";
+import { CompareApp } from "./compare/App";
 import { ConflictsApp } from "./conflicts/App";
 import { MergeStandaloneApp } from "./conflicts/MergeStandaloneApp";
 import { PanelApp } from "./panel/App";
@@ -28,6 +29,7 @@ const mode = root.dataset.mode as
   | "commit"
   | "push"
   | "rollback"
+  | "compare"
   | undefined;
 
 createRoot(root).render(
@@ -42,6 +44,8 @@ createRoot(root).render(
       <PushApp />
     ) : mode === "rollback" ? (
       <RollbackApp />
+    ) : mode === "compare" ? (
+      <CompareApp />
     ) : (
       <PanelApp />
     )}
