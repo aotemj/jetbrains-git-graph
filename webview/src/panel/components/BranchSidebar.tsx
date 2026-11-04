@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { bridge } from "../../shared/bridge";
 import { Tooltip } from "../../shared/components/Tooltip";
+import { t } from "../../shared/i18n";
 import "../../shared/components/Tooltip.css";
 import { usePanelStore } from "../../shared/store/panel-store";
 
@@ -76,7 +77,7 @@ export function BranchSidebar({
   return (
     <div className="branch-sidebar">
       {onTogglePanel && (
-        <Tooltip text="Hide Branches">
+        <Tooltip text={t("Hide Branches")}>
           <button
             type="button"
             className="branch-sidebar-btn"
@@ -86,7 +87,7 @@ export function BranchSidebar({
           </button>
         </Tooltip>
       )}
-      <Tooltip text="New Branch">
+      <Tooltip text={t("New Branch")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -95,7 +96,7 @@ export function BranchSidebar({
           <IconAdd />
         </button>
       </Tooltip>
-      <Tooltip text="Update Selected">
+      <Tooltip text={t("Update Selected")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -105,7 +106,7 @@ export function BranchSidebar({
           <IconUpdate />
         </button>
       </Tooltip>
-      <Tooltip text="Delete Branch">
+      <Tooltip text={t("Delete Branch")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -115,7 +116,7 @@ export function BranchSidebar({
           <IconDelete />
         </button>
       </Tooltip>
-      <Tooltip text="Compare with Current">
+      <Tooltip text={t("Compare with Current")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -125,7 +126,7 @@ export function BranchSidebar({
           <IconCompare />
         </button>
       </Tooltip>
-      <Tooltip text="Show My Branches">
+      <Tooltip text={t("Show My Branches")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -134,7 +135,7 @@ export function BranchSidebar({
           <IconSearch />
         </button>
       </Tooltip>
-      <Tooltip text="Fetch">
+      <Tooltip text={t("Fetch")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -143,7 +144,7 @@ export function BranchSidebar({
           <IconFetch />
         </button>
       </Tooltip>
-      <Tooltip text="Mark/Unmark As Favorite">
+      <Tooltip text={t("Mark/Unmark As Favorite")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -153,7 +154,7 @@ export function BranchSidebar({
           <IconStar />
         </button>
       </Tooltip>
-      <Tooltip text="Navigate Log to Selected Branch Head">
+      <Tooltip text={t("Navigate Log to Selected Branch Head")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -165,7 +166,9 @@ export function BranchSidebar({
       </Tooltip>
       <SettingsButton />
       <Tooltip
-        text={branchGroupByDirectory ? "Flatten List" : "Group By Directory"}
+        text={
+          branchGroupByDirectory ? t("Flatten List") : t("Group By Directory")
+        }
       >
         <button
           type="button"
@@ -178,7 +181,7 @@ export function BranchSidebar({
 
       <div className="branch-sidebar-spacer" />
 
-      <Tooltip text="Expand All">
+      <Tooltip text={t("Expand All")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -187,7 +190,7 @@ export function BranchSidebar({
           <IconExpandAll />
         </button>
       </Tooltip>
-      <Tooltip text="Collapse All">
+      <Tooltip text={t("Collapse All")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -208,7 +211,7 @@ function SettingsButton() {
 
   return (
     <>
-      <Tooltip text="Settings">
+      <Tooltip text={t("Settings")}>
         <button
           type="button"
           className="branch-sidebar-btn"
@@ -254,7 +257,7 @@ function SettingsMenu({ onClose }: { onClose: () => void }) {
         zIndex: 1000,
       }}
     >
-      <div className="commit-context-menu-header">On Single Click</div>
+      <div className="commit-context-menu-header">{t("On Single Click")}</div>
       <button
         type="button"
         className="commit-context-menu-item"
@@ -265,7 +268,7 @@ function SettingsMenu({ onClose }: { onClose: () => void }) {
           onClose();
         }}
       >
-        <span>Update Branch Filter</span>
+        <span>{t("Update Branch Filter")}</span>
       </button>
       <button
         type="button"
@@ -277,7 +280,7 @@ function SettingsMenu({ onClose }: { onClose: () => void }) {
           onClose();
         }}
       >
-        <span>Navigate Log to Branch Head</span>
+        <span>{t("Navigate Log to Branch Head")}</span>
       </button>
       <div className="commit-context-menu-separator" />
       <button
@@ -288,7 +291,7 @@ function SettingsMenu({ onClose }: { onClose: () => void }) {
           onClose();
         }}
       >
-        <span>✓ Show Tags</span>
+        <span>{t("✓ Show Tags")}</span>
       </button>
     </div>
   );

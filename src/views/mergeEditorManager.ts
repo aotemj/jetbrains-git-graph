@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { t } from "../i18n";
 import type { MessageRouter } from "../messages/messageRouter";
 import { getWebviewHtml } from "./html";
 
@@ -20,7 +21,7 @@ export class MergeEditorManager {
     const fileName = filePath.split("/").pop() ?? filePath;
     const panel = vscode.window.createWebviewPanel(
       "git-brains.mergeEditor",
-      `Merge: ${fileName}`,
+      t("Merge: {file}", { file: fileName }),
       vscode.ViewColumn.One,
       {
         enableScripts: true,

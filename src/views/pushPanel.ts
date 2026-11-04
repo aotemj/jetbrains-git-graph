@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { t } from "../i18n";
 import type { MessageRouter } from "../messages/messageRouter";
 import { getWebviewHtml } from "./html";
 
@@ -28,7 +29,7 @@ export class PushPanel {
 
     this.panel = vscode.window.createWebviewPanel(
       "git-brains.pushPanel",
-      `Push Commits to ${branchName}`,
+      t("Push Commits to {branch}", { branch: branchName }),
       vscode.ViewColumn.One,
       {
         enableScripts: true,

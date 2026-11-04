@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { bridge } from "../../shared/bridge";
+import { t } from "../../shared/i18n";
 import {
   useCommitStore,
   type WorkingTreeFile,
@@ -71,7 +72,7 @@ export function CommitTab() {
       .filter((f) => selectedFiles.has(`${f.path}:${f.staged}`))
       .map((f) => f.path);
     if (selectedPaths.length === 0) return;
-    await ideaShelveChanges("Shelved changes", [...new Set(selectedPaths)]);
+    await ideaShelveChanges(t("Shelved changes"), [...new Set(selectedPaths)]);
   }, [changes, selectedFiles, ideaShelveChanges]);
 
   const handleContextMenu = useCallback(
@@ -136,7 +137,7 @@ export function CommitTab() {
         {/* Merge Conflicts */}
         {conflictedFiles.length > 0 && (
           <FileGroup
-            label="Merge Conflicts"
+            label={t("Merge Conflicts")}
             files={conflictedFiles}
             count={conflictedFiles.length}
             expanded={expandedGroups.has("conflicts")}
@@ -161,7 +162,7 @@ export function CommitTab() {
                 role="button"
                 tabIndex={0}
               >
-                Resolve
+                {t("Resolve")}
               </span>
             }
           />
@@ -170,7 +171,7 @@ export function CommitTab() {
         {/* Changes (tracked, modified) */}
         {changedFiles.length > 0 && (
           <FileGroup
-            label="Changes"
+            label={t("Changes")}
             files={changedFiles}
             count={changedFiles.length}
             expanded={expandedGroups.has("changes")}
@@ -190,7 +191,7 @@ export function CommitTab() {
         {/* Staged files */}
         {stagedFiles.length > 0 && (
           <FileGroup
-            label="Staged"
+            label={t("Staged")}
             files={stagedFiles}
             count={stagedFiles.length}
             expanded={expandedGroups.has("staged")}
@@ -210,7 +211,7 @@ export function CommitTab() {
         {/* Unversioned Files */}
         {showUnversioned && untrackedFiles.length > 0 && (
           <FileGroup
-            label="Unversioned Files"
+            label={t("Unversioned Files")}
             files={untrackedFiles}
             count={untrackedFiles.length}
             expanded={expandedGroups.has("unversioned")}
@@ -228,7 +229,7 @@ export function CommitTab() {
         )}
 
         {changes.length === 0 && (
-          <div className="shelf-empty">No changes detected</div>
+          <div className="shelf-empty">{t("No changes detected")}</div>
         )}
       </div>
 
@@ -385,7 +386,7 @@ function FileGroup({
         </span>
         {label}
         <span className="commit-group-count">
-          {count} {count === 1 ? "file" : "files"}
+          {t(count === 1 ? "{count} file" : "{count} files", { count })}
         </span>
         {action}
       </div>
@@ -624,8 +625,10 @@ function DirNodeView({
                 <FolderIcon />
                 <span className="commit-dir-name">{child.name}</span>
                 <span className="commit-dir-count">
-                  {countFiles(child)}{" "}
-                  {countFiles(child) === 1 ? "file" : "files"}
+                  {t(
+                    countFiles(child) === 1 ? "{count} file" : "{count} files",
+                    { count: countFiles(child) },
+                  )}
                 </span>
               </div>
               {!isCollapsed && (
@@ -801,7 +804,7 @@ function DirContextMenu({
         onClick={handleRollback}
       >
         <RollbackIcon />
-        <span>Rollback...</span>
+        <span>{t("Rollback...")}</span>
       </button>
 
       <div className="commit-context-menu-separator" />
@@ -812,7 +815,7 @@ function DirContextMenu({
         onClick={handleOpenInSystemFolder}
       >
         <FolderOpenIcon />
-        <span>Open in System Folder</span>
+        <span>{t("Open in System Folder")}</span>
       </button>
 
       <div className="commit-context-menu-separator" />
@@ -823,7 +826,7 @@ function DirContextMenu({
         onClick={handleDelete}
       >
         <DeleteDirIcon />
-        <span>Delete "{dirName}"...</span>
+        <span>{t('Delete "{name}"...', { name: dirName })}</span>
         <span className="commit-context-menu-shortcut">⌫</span>
       </button>
     </div>

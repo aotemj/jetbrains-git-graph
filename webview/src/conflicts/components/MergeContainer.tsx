@@ -1,5 +1,6 @@
 import type React from "react";
 import { useEffect, useMemo, useRef } from "react";
+import { t } from "../../shared/i18n";
 import type { MergeBlock } from "../../shared/models/merge";
 import { useMergeStore } from "../../shared/store/merge-store";
 import { MergeColumn } from "./MergeColumn";
@@ -129,7 +130,7 @@ export const MergeContainer: React.FC<MergeContainerProps> = ({
         onScroll={handleScroll("left")}
         style={{ overflow: "auto", borderRight: "1px solid var(--border)" }}
       >
-        <div style={headerStyle}>Left (Theirs)</div>
+        <div style={headerStyle}>{t("Left (Theirs)")}</div>
         <div style={{ width: "max-content", minWidth: "100%" }}>
           {blocks.map((block) => (
             <MergeColumn
@@ -161,7 +162,7 @@ export const MergeContainer: React.FC<MergeContainerProps> = ({
         onScroll={handleScroll("center")}
         style={{ overflow: "auto", borderRight: "1px solid var(--border)" }}
       >
-        <div style={headerStyle}>Center (Result)</div>
+        <div style={headerStyle}>{t("Center (Result)")}</div>
         <div style={{ width: "max-content", minWidth: "100%" }}>
           {blocks.map((block) => (
             <div
@@ -207,7 +208,7 @@ export const MergeContainer: React.FC<MergeContainerProps> = ({
         onScroll={handleScroll("right")}
         style={{ overflow: "auto" }}
       >
-        <div style={headerStyle}>Right (Yours)</div>
+        <div style={headerStyle}>{t("Right (Yours)")}</div>
         <div style={{ width: "max-content", minWidth: "100%" }}>
           {blocks.map((block) => (
             <MergeColumn

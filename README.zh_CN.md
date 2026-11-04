@@ -116,6 +116,11 @@ IntelliJ IDEA 风格的 Git 可视化工具：提交图、分支管理、Cherry-
 1. 从 [Releases](https://github.com/aotemj/jetbrains-git-graph/releases) 下载最新 `.vsix`
 2. `Cmd+Shift+P` → "Extensions: Install from VSIX..."
 
+## 多语言
+
+界面内置**英文**和**简体中文**，默认跟随 VS Code 的显示语言。也可以通过
+`jetgit.language` 设置强制指定语言（`auto` / `en` / `zh-cn`）。
+
 ## 环境要求
 
 - VS Code 1.85.0+

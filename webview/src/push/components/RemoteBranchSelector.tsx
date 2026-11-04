@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { bridge } from "../../shared/bridge";
+import { t } from "../../shared/i18n";
 
 interface RemoteBranchGroup {
   remote: string;
@@ -104,9 +105,13 @@ export function RemoteBranchSelector({
     <div className="remote-branch-selector" ref={containerRef}>
       {/* Remote list */}
       <div className="remote-branch-selector__remotes">
-        <div className="remote-branch-selector__section-label">Remote</div>
+        <div className="remote-branch-selector__section-label">
+          {t("Remote")}
+        </div>
         {loading && (
-          <div className="remote-branch-selector__loading">Loading...</div>
+          <div className="remote-branch-selector__loading">
+            {t("Loading...")}
+          </div>
         )}
         {!loading &&
           remotes.map((remote) => (
@@ -120,14 +125,16 @@ export function RemoteBranchSelector({
           ))}
         {!loading && remotes.length === 0 && (
           <div className="remote-branch-selector__loading">
-            No remotes found
+            {t("No remotes found")}
           </div>
         )}
       </div>
 
       {/* Branch input */}
       <div className="remote-branch-selector__branch">
-        <div className="remote-branch-selector__section-label">Branch</div>
+        <div className="remote-branch-selector__section-label">
+          {t("Branch")}
+        </div>
         <input
           ref={inputRef}
           type="text"
@@ -140,7 +147,7 @@ export function RemoteBranchSelector({
               handleBranchConfirm();
             }
           }}
-          placeholder="branch name"
+          placeholder={t("branch name")}
           spellCheck={false}
           autoComplete="off"
         />

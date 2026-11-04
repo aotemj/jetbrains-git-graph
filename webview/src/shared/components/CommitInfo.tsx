@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import type { Commit } from "../types/git";
 
 /** Renders text with URLs highlighted as clickable links */
@@ -107,7 +108,7 @@ export function CommitInfo({ commit }: { commit: Commit }) {
             </a>{" "}
           </>
         )}
-        on {formatDateTime(commit.authorDate)}
+        {t("on {date}", { date: formatDateTime(commit.authorDate) })}
       </div>
 
       {/* Ref icons + text */}

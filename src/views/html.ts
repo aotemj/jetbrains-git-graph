@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { getLocale } from "../i18n";
 
 export function getWebviewHtml(
   webview: vscode.Webview,
@@ -14,8 +15,9 @@ export function getWebviewHtml(
     vscode.Uri.joinPath(distUri, "assets", "style.css"),
   );
   const nonce = getNonce();
+  const locale = getLocale();
 
-  const dataAttrs = [`data-mode="${mode}"`];
+  const dataAttrs = [`data-mode="${mode}"`, `data-locale="${locale}"`];
   if (extra) {
     for (const [key, value] of Object.entries(extra)) {
       dataAttrs.push(`data-${key}="${escapeHtml(value)}"`);
@@ -23,7 +25,7 @@ export function getWebviewHtml(
   }
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${locale === "zh-cn" ? "zh-CN" : "en"}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">

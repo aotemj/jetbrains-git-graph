@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "../../shared/i18n";
 
 export interface CreateBranchDialogProps {
   /** Title shown at top, e.g. "Create Branch from dev" */
@@ -194,7 +195,7 @@ export function CreateBranchDialog({
                 whiteSpace: "nowrap",
               }}
             >
-              Branch Name:
+              {t("Branch Name:")}
             </label>
             <input
               ref={inputRef}
@@ -244,7 +245,7 @@ export function CreateBranchDialog({
             }}
           >
             <Checkbox checked={checkout} onChange={(v) => setCheckout(v)} />
-            Checkout branch
+            {t("Checkout branch")}
           </label>
           <label
             style={{
@@ -263,7 +264,7 @@ export function CreateBranchDialog({
                 setError(null);
               }}
             />
-            Overwrite existing branch
+            {t("Overwrite existing branch")}
           </label>
         </div>
 
@@ -283,7 +284,7 @@ export function CreateBranchDialog({
               cursor: "pointer",
             }}
           >
-            Cancel
+            {t("Cancel")}
           </button>
           <button
             type="button"
@@ -301,7 +302,7 @@ export function CreateBranchDialog({
               opacity: branchName.trim() && !submitting ? 1 : 0.4,
             }}
           >
-            Create
+            {t("Create")}
           </button>
         </div>
       </div>

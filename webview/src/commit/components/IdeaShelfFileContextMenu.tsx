@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { bridge } from "../../shared/bridge";
+import { t } from "../../shared/i18n";
 
 interface IdeaShelfFileContextMenuProps {
   x: number;
@@ -65,7 +66,7 @@ export function IdeaShelfFileContextMenu({
         onClick={handleShowDiff}
       >
         <DiffIcon />
-        <span>Show Diff</span>
+        <span>{t("Show Diff")}</span>
         <span className="commit-context-menu-shortcut">⌘D</span>
       </button>
 
@@ -75,7 +76,7 @@ export function IdeaShelfFileContextMenu({
         onClick={handleJumpToSource}
       >
         <JumpIcon />
-        <span>Jump to Source</span>
+        <span>{t("Jump to Source")}</span>
       </button>
 
       <div className="commit-context-menu-separator" />
@@ -86,7 +87,7 @@ export function IdeaShelfFileContextMenu({
         onClick={handleCopyPath}
       >
         <CopyIcon />
-        <span>Copy Path</span>
+        <span>{t("Copy Path")}</span>
       </button>
     </div>
   );

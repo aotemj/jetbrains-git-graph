@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { bridge } from "../../shared/bridge";
+import { t } from "../../shared/i18n";
 
 interface ShelfFileContextMenuProps {
   x: number;
@@ -70,7 +71,7 @@ export function ShelfFileContextMenu({
         onClick={handleUnshelveFile}
       >
         <UnshelveIcon />
-        <span>Unshelve This File</span>
+        <span>{t("Unshelve This File")}</span>
       </button>
 
       <div className="commit-context-menu-separator" />
@@ -81,7 +82,7 @@ export function ShelfFileContextMenu({
         onClick={handleShowDiff}
       >
         <DiffIcon />
-        <span>Show Diff</span>
+        <span>{t("Show Diff")}</span>
         <span className="commit-context-menu-shortcut">⌘D</span>
       </button>
 
@@ -91,7 +92,7 @@ export function ShelfFileContextMenu({
         onClick={handleJumpToSource}
       >
         <JumpIcon />
-        <span>Jump to Source</span>
+        <span>{t("Jump to Source")}</span>
       </button>
 
       <div className="commit-context-menu-separator" />
@@ -102,7 +103,7 @@ export function ShelfFileContextMenu({
         onClick={handleCopyPath}
       >
         <CopyIcon />
-        <span>Copy Path</span>
+        <span>{t("Copy Path")}</span>
       </button>
     </div>
   );

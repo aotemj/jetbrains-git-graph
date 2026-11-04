@@ -1,4 +1,5 @@
 import { CommitInfo } from "../../shared/components/CommitInfo";
+import { t } from "../../shared/i18n";
 import { usePanelStore } from "../../shared/store/panel-store";
 import type { Commit } from "../../shared/types/git";
 
@@ -13,7 +14,7 @@ export function CommitDetail() {
   if (selectedCommits.length === 0) {
     return (
       <div style={{ padding: 12, opacity: 0.5 }}>
-        Select a commit to view details
+        {t("Select a commit to view details")}
       </div>
     );
   }

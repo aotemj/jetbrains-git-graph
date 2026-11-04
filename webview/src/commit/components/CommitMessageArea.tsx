@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { bridge } from "../../shared/bridge";
 import { Tooltip } from "../../shared/components/Tooltip";
 import "../../shared/components/Tooltip.css";
+import { t } from "../../shared/i18n";
 import { useCommitStore } from "../../shared/store/commit-store";
 
 export function CommitMessageArea() {
@@ -98,7 +99,7 @@ export function CommitMessageArea() {
     <div className="commit-message-area">
       <textarea
         className="commit-message-textarea"
-        placeholder="Commit message (Ctrl+Enter to commit)"
+        placeholder={t("Commit message (Ctrl+Enter to commit)")}
         value={commitMessage}
         onChange={(e) => setCommitMessage(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -112,9 +113,9 @@ export function CommitMessageArea() {
             checked={amend}
             onChange={(e) => setAmend(e.target.checked)}
           />
-          Amend
+          {t("Amend")}
         </label>
-        <Tooltip text="Recent commit messages">
+        <Tooltip text={t("Recent commit messages")}>
           <span
             ref={historyBtnRef}
             onClick={handleHistoryClick}
@@ -171,7 +172,7 @@ export function CommitMessageArea() {
           disabled={!canCommit}
           onClick={handleCommit}
         >
-          Commit
+          {t("Commit")}
         </button>
 
         <div className="commit-dropdown" ref={dropdownRef}>
@@ -181,7 +182,7 @@ export function CommitMessageArea() {
             disabled={!canCommit}
             onClick={handleCommitAndPush}
           >
-            Commit and Push...
+            {t("Commit and Push...")}
           </button>
           <button
             type="button"
@@ -207,7 +208,7 @@ export function CommitMessageArea() {
                 className="commit-dropdown-item"
                 onClick={handleCommitAndPush}
               >
-                Commit and Push
+                {t("Commit and Push")}
               </button>
               <div className="commit-dropdown-separator" />
               <button
@@ -217,7 +218,7 @@ export function CommitMessageArea() {
                   setShowDropdown(false);
                 }}
               >
-                Cancel
+                {t("Cancel")}
               </button>
             </div>
           )}
@@ -299,7 +300,7 @@ const HistoryDropdown = React.forwardRef<HTMLDivElement, HistoryDropdownProps>(
               fontSize: 12,
             }}
           >
-            No recent commit messages
+            {t("No recent commit messages")}
           </div>
         ) : (
           messages.map((msg, i) => (

@@ -116,6 +116,12 @@ Search for **"IDEA-Like Git"** in VS Code Extensions.
 1. Download the latest `.vsix` from [releases](https://github.com/aotemj/jetbrains-git-graph/releases)
 2. `Cmd+Shift+P` → "Extensions: Install from VSIX..."
 
+## Localization
+
+The interface ships in **English** and **Simplified Chinese**. By default it
+follows the VS Code display language; you can force a language with the
+`jetgit.language` setting (`auto` / `en` / `zh-cn`).
+
 ## Requirements
 
 - VS Code 1.85.0+

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { t } from "../i18n";
 import type { MessageRouter } from "../messages/messageRouter";
 import { getWebviewHtml } from "./html";
 
@@ -36,7 +37,7 @@ export class RollbackPanel {
 
     this.panel = vscode.window.createWebviewPanel(
       "git-brains.rollbackPanel",
-      "Rollback Changes",
+      t("Rollback Changes"),
       vscode.ViewColumn.One,
       {
         enableScripts: true,

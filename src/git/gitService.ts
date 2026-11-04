@@ -3,6 +3,7 @@ import * as fs from "node:fs/promises";
 import * as os from "node:os";
 import * as path from "node:path";
 import { promisify } from "node:util";
+import { t } from "../i18n";
 import { GitCache } from "./cache";
 import { computeGraphLayout } from "./graphLayout";
 import type {
@@ -822,7 +823,7 @@ export class GitService {
     // Verify commit has a parent
     const parents = await this.getCommitParents(hash);
     if (parents.length === 0) {
-      throw new Error("Cannot drop the initial commit (no parent)");
+      throw new Error(t("Cannot drop the initial commit (no parent)"));
     }
     await this.execGit(["reset", "--mixed", "HEAD~1"]);
   }
@@ -1359,7 +1360,7 @@ export class GitService {
     if (!patchContent.trim()) {
       // Clean up empty directory
       await fs.rm(entryDir, { recursive: true, force: true });
-      throw new Error("No changes to shelve");
+      throw new Error(t("No changes to shelve"));
     }
 
     // Write patch file

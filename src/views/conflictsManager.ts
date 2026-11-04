@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { t } from "../i18n";
 import type { MessageRouter } from "../messages/messageRouter";
 import { getWebviewHtml } from "./html";
 
@@ -18,7 +19,7 @@ export class ConflictsManager {
 
     const panel = vscode.window.createWebviewPanel(
       "git-brains.conflicts",
-      "Conflicts",
+      t("Conflicts"),
       vscode.ViewColumn.One,
       {
         enableScripts: true,

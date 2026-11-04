@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { bridge } from "../../shared/bridge";
 import { useModifierClickSelection } from "../../shared/hooks/useModifierClickSelection";
+import { t } from "../../shared/i18n";
 import { usePanelStore } from "../../shared/store/panel-store";
 import type { Commit } from "../../shared/types/git";
 import { CommitContextMenu } from "./CommitContextMenu";
@@ -332,7 +333,7 @@ export function CommitList({
           background: "var(--app-bg, #1e1e1e)",
         }}
       >
-        <span style={{ flex: 1, paddingRight: 4 }}>Message</span>
+        <span style={{ flex: 1, paddingRight: 4 }}>{t("Message")}</span>
         {visibleColumns.author && (
           <>
             <ColumnResizeHandle
@@ -346,7 +347,7 @@ export function CommitList({
                 paddingLeft: 8,
               }}
             >
-              Author
+              {t("Author")}
             </span>
           </>
         )}
@@ -364,7 +365,7 @@ export function CommitList({
                 paddingLeft: 8,
               }}
             >
-              Date
+              {t("Date")}
             </span>
           </>
         )}
@@ -381,7 +382,7 @@ export function CommitList({
                 paddingLeft: 8,
               }}
             >
-              Hash
+              {t("Hash")}
             </span>
           </>
         )}
@@ -461,7 +462,9 @@ export function CommitList({
         {createBranchDialog &&
           createPortal(
             <CreateBranchDialog
-              title={`Create Branch from ${createBranchDialog.shortHash}`}
+              title={t("Create Branch from {hash}", {
+                hash: createBranchDialog.shortHash,
+              })}
               defaultName=""
               placeholder="branch-name"
               onClose={() => setCreateBranchDialog(null)}
@@ -481,7 +484,10 @@ export function CommitList({
                   const match = msg.match(/fatal:\s*(.+)/);
                   return match
                     ? match[1]
-                    : `Branch '${branchName}' already exists.\nChange the name or overwrite existing branch.`;
+                    : t(
+                        "Branch '{branch}' already exists.\nChange the name or overwrite existing branch.",
+                        { branch: branchName },
+                      );
                 }
               }}
             />,
@@ -574,9 +580,9 @@ function HeaderColumnMenu({
   }, [onClose]);
 
   const columns: { key: keyof VisibleColumns; label: string }[] = [
-    { key: "author", label: "Author" },
-    { key: "date", label: "Date" },
-    { key: "hash", label: "Hash" },
+    { key: "author", label: t("Author") },
+    { key: "date", label: t("Date") },
+    { key: "hash", label: t("Hash") },
   ];
 
   return (
@@ -590,7 +596,7 @@ function HeaderColumnMenu({
         zIndex: 10000,
       }}
     >
-      <div className="commit-context-menu-header">Columns</div>
+      <div className="commit-context-menu-header">{t("Columns")}</div>
       {columns.map((col) => (
         <button
           key={col.key}

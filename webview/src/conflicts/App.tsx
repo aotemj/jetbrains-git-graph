@@ -11,6 +11,7 @@ import {
   useModifierClickSelection,
 } from "../shared/hooks/useModifierClickSelection";
 import { usePreventSelect } from "../shared/hooks/usePreventSelect";
+import { t } from "../shared/i18n";
 import type { DiffFile } from "../shared/types/git";
 
 interface MergeState {
@@ -165,7 +166,7 @@ export function ConflictsApp() {
             textAlign: "center",
           }}
         >
-          Modified
+          {t("Modified")}
         </span>
         <span
           style={{
@@ -176,7 +177,7 @@ export function ConflictsApp() {
             textAlign: "center",
           }}
         >
-          Modified
+          {t("Modified")}
         </span>
       </>
     ),
@@ -194,7 +195,7 @@ export function ConflictsApp() {
           opacity: 0.5,
         }}
       >
-        Loading...
+        {t("Loading...")}
       </div>
     );
   }
@@ -226,24 +227,29 @@ export function ConflictsApp() {
             marginBottom: 4,
           }}
         >
-          Conflicts
+          {t("Conflicts")}
         </h2>
         <p style={{ margin: 0, fontSize: 13, opacity: 0.8 }}>
           {branchInfo ? (
-            <>
-              Merging branch <strong>{branchInfo.from}</strong> into{" "}
-              <strong>{branchInfo.into}</strong>
-            </>
+            t("Merging branch {from} into {into}", {
+              from: branchInfo.from,
+              into: branchInfo.into,
+            })
           ) : mergeState?.isMerging ? (
-            <>Merge in progress</>
+            <>{t("Merge in progress")}</>
           ) : (
-            <>No merge in progress</>
+            <>{t("No merge in progress")}</>
           )}
         </p>
         {conflictFiles.length > 0 && (
           <p style={{ margin: 0, marginTop: 4, fontSize: 12, opacity: 0.6 }}>
-            {conflictFiles.length} file{conflictFiles.length > 1 ? "s" : ""}{" "}
-            with conflicts
+            {conflictFiles.length === 1
+              ? t("{count} file with conflicts", {
+                  count: conflictFiles.length,
+                })
+              : t("{count} files with conflicts", {
+                  count: conflictFiles.length,
+                })}
           </p>
         )}
         <label
@@ -260,7 +266,7 @@ export function ConflictsApp() {
             checked={groupByDir}
             onChange={(e) => setGroupByDir(e.target.checked)}
           />
-          Group files by directory
+          {t("Group files by directory")}
         </label>
       </div>
 
@@ -275,7 +281,7 @@ export function ConflictsApp() {
             opacity: 0.5,
           }}
         >
-          All conflicts resolved
+          {t("All conflicts resolved")}
         </div>
       ) : (
         <div
@@ -309,7 +315,7 @@ export function ConflictsApp() {
                 flexShrink: 0,
               }}
             >
-              <span style={{ flex: 1 }}>Name</span>
+              <span style={{ flex: 1 }}>{t("Name")}</span>
               <span
                 style={{
                   minWidth: 60,
@@ -317,7 +323,7 @@ export function ConflictsApp() {
                   flexShrink: 0,
                 }}
               >
-                Yours
+                {t("Yours")}
               </span>
               <span
                 style={{
@@ -326,7 +332,7 @@ export function ConflictsApp() {
                   flexShrink: 0,
                 }}
               >
-                Theirs
+                {t("Theirs")}
               </span>
             </div>
             {/* File tree */}
@@ -361,17 +367,17 @@ export function ConflictsApp() {
             }}
           >
             <ActionButton disabled={!hasSelection} onClick={handleAcceptYours}>
-              Accept Yours
+              {t("Accept Yours")}
             </ActionButton>
             <ActionButton disabled={!hasSelection} onClick={handleAcceptTheirs}>
-              Accept Theirs
+              {t("Accept Theirs")}
             </ActionButton>
             <ActionButton
               disabled={!hasSelection}
               onClick={handleMerge}
               primary
             >
-              Merge...
+              {t("Merge...")}
             </ActionButton>
           </div>
         </div>

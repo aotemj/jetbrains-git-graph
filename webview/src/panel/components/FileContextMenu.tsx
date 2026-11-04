@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { bridge, bridgeWithProgress } from "../../shared/bridge";
+import { t } from "../../shared/i18n";
 import { usePanelStore } from "../../shared/store/panel-store";
 import type { DiffFile } from "../../shared/types/git";
 
@@ -262,8 +263,10 @@ export function FileContextMenu({ x, y, file, onClose }: FileContextMenuProps) {
     onClose();
     if (!selectedCommitHash) return;
     const result = (await bridge.request("showConfirmMessage", {
-      message: `Revert changes to '${filePath.split("/").pop()}' from this commit?`,
-      confirmLabel: "Revert",
+      message: t("Revert changes to '{file}' from this commit?", {
+        file: String(filePath.split("/").pop()),
+      }),
+      confirmLabel: t("Revert"),
     })) as { confirmed: boolean };
     if (!result.confirmed) return;
     try {
@@ -281,8 +284,11 @@ export function FileContextMenu({ x, y, file, onClose }: FileContextMenuProps) {
     onClose();
     if (!selectedCommitHash) return;
     const result = (await bridge.request("showConfirmMessage", {
-      message: `Apply changes to '${filePath.split("/").pop()}' from this commit to working tree?`,
-      confirmLabel: "Apply",
+      message: t(
+        "Apply changes to '{file}' from this commit to working tree?",
+        { file: String(filePath.split("/").pop()) },
+      ),
+      confirmLabel: t("Apply"),
     })) as { confirmed: boolean };
     if (!result.confirmed) return;
     try {
@@ -306,26 +312,30 @@ export function FileContextMenu({ x, y, file, onClose }: FileContextMenuProps) {
     separator?: boolean;
     icon?: React.ReactNode;
   }[] = [
-    { label: "Show Diff", action: handleShowDiff, icon: <IconDiff /> },
+    { label: t("Show Diff"), action: handleShowDiff, icon: <IconDiff /> },
     { label: "", action: () => {}, separator: true },
-    { label: "Edit Source", action: handleEditSource, icon: <IconEdit /> },
-    { label: "Open Repository Version", action: handleOpenRepoVersion },
+    { label: t("Edit Source"), action: handleEditSource, icon: <IconEdit /> },
+    { label: t("Open Repository Version"), action: handleOpenRepoVersion },
     { label: "", action: () => {}, separator: true },
     {
-      label: "Revert Selected Changes",
+      label: t("Revert Selected Changes"),
       action: handleRevertFileChanges,
       icon: <IconRevert />,
     },
     {
-      label: "Cherry-Pick Selected Changes",
+      label: t("Cherry-Pick Selected Changes"),
       action: handleCherryPickFileChanges,
       icon: <IconCherryPick />,
     },
     { label: "", action: () => {}, separator: true },
-    { label: "Copy Path", action: handleCopyPath, icon: <IconCopy /> },
-    { label: "Copy File Name", action: handleCopyFileName, icon: <IconCopy /> },
+    { label: t("Copy Path"), action: handleCopyPath, icon: <IconCopy /> },
+    {
+      label: t("Copy File Name"),
+      action: handleCopyFileName,
+      icon: <IconCopy />,
+    },
     { label: "", action: () => {}, separator: true },
-    { label: "History Up to Here", action: handleHistoryUpToHere },
+    { label: t("History Up to Here"), action: handleHistoryUpToHere },
   ];
 
   const menu = (

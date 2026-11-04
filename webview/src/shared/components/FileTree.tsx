@@ -4,6 +4,7 @@ import {
   IconFolder,
   IconFolderOpen,
 } from "../../panel/utils/file-icons";
+import { t } from "../i18n";
 import type { DiffFile } from "../types/git";
 
 // ---------------------------------------------------------------------------
@@ -365,7 +366,9 @@ function FileTreeNodeView({
               flexShrink: 0,
             }}
           >
-            {node.fileCount} {node.fileCount === 1 ? "file" : "files"}
+            {node.fileCount === 1
+              ? t("{count} file", { count: node.fileCount })
+              : t("{count} files", { count: node.fileCount })}
           </span>
         )}
       </div>

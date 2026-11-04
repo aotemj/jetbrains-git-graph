@@ -1,5 +1,12 @@
 # Changelog / 更新日志
 
+## [0.4.18] - 2026-11-04
+
+### Added / 新增
+- **i18n: Simplified Chinese UI** — every panel (Git Log, Commit/Shelf, Push, Rollback, Conflicts, 3-way Merge) plus commands, menus, dialogs and notifications now support English and Simplified Chinese / 全部界面（Git 日志、提交/搁置、推送、回滚、冲突、三方合并）以及命令、菜单、对话框、通知均支持英文和简体中文
+- **`jetgit.language` setting** — `auto` (follow VS Code display language) / `en` / `zh-cn` / 新增 `jetgit.language` 设置：`auto`（跟随 VS Code 显示语言）/ `en` / `zh-cn`
+- **Localized extension manifest** — view/command titles via `package.nls.*.json` / 插件清单中的视图和命令名称使用 `package.nls.*.json` 本地化
+
 ## [0.4.17] - 2026-06-20
 
 ### Added / 新增

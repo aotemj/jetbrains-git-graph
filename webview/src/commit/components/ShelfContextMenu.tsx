@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
+import { t } from "../../shared/i18n";
 import type { ShelveEntry } from "../../shared/store/commit-store";
 import { useCommitStore } from "../../shared/store/commit-store";
 
@@ -65,7 +66,7 @@ export function ShelfContextMenu({
         onClick={handleUnshelve}
       >
         <UnshelveIcon />
-        <span>Unshelve...</span>
+        <span>{t("Unshelve...")}</span>
         <span className="commit-context-menu-shortcut">⇧⌘U</span>
       </button>
 
@@ -75,7 +76,7 @@ export function ShelfContextMenu({
         onClick={handleApply}
       >
         <ApplyIcon />
-        <span>Restore</span>
+        <span>{t("Restore")}</span>
       </button>
 
       <div className="commit-context-menu-separator" />
@@ -86,7 +87,7 @@ export function ShelfContextMenu({
         onClick={handleDelete}
       >
         <DeleteIcon />
-        <span>Delete...</span>
+        <span>{t("Delete...")}</span>
         <span className="commit-context-menu-shortcut">⌫</span>
       </button>
     </div>
