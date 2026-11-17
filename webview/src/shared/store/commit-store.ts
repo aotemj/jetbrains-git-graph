@@ -104,7 +104,13 @@ export const useCommitStore = create<CommitStore>((set, get) => ({
   activeTab: "commit",
   loading: false,
   expandedGroups: new Set(["changes", "unversioned", "staged"]),
-  groupByDirectory: true,
+  groupByDirectory: (() => {
+    try {
+      return localStorage.getItem("commitGroupByDirectory") !== "false";
+    } catch {
+      return true;
+    }
+  })(),
   showUnversioned: true,
   collapsedDirs: new Set<string>(),
 
@@ -456,6 +462,11 @@ export const useCommitStore = create<CommitStore>((set, get) => ({
 
   toggleGroupByDirectory() {
     const next = !get().groupByDirectory;
+    try {
+      localStorage.setItem("commitGroupByDirectory", String(next));
+    } catch {
+      // ignore
+    }
     // When toggling to directory mode, reset collapsed state so DirectoryTree will collapse all on mount
     if (next) {
       set({ groupByDirectory: true, collapsedDirs: new Set() });
