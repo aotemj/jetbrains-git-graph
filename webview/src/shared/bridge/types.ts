@@ -48,6 +48,8 @@ export type CommandType =
   | "closeMergeEditor"
   | "openFile"
   | "checkoutBranch"
+  | "checkoutRemoteBranch"
+  | "checkoutResolveLocalChanges"
   | "createBranch"
   | "createBranchFromCommit"
   | "deleteBranch"
