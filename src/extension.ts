@@ -34,6 +34,32 @@ function withProgress(
   });
 }
 
+type CheckoutAttempt =
+  | { success: true }
+  | { success: false; needsDecision: true; targetBranch: string };
+
+/**
+ * Try to switch branches. When git refuses because local changes would be
+ * overwritten, report back so the webview can ask the user how to proceed —
+ * showing a modal dialog here would block the request past the webview's
+ * timeout.
+ */
+async function tryCheckout(
+  gitService: GitService,
+  branchName: string,
+): Promise<CheckoutAttempt> {
+  try {
+    await gitService.checkout(branchName);
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (GitService.isLocalChangesConflict(message)) {
+      return { success: false, needsDecision: true, targetBranch: branchName };
+    }
+    throw err;
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   // 1. MessageRouter (always created)
   const messageRouter = new MessageRouter();
@@ -591,9 +617,47 @@ export function activate(context: vscode.ExtensionContext) {
     if (!gitService) return NOT_GIT_REPO;
     const branchName = params.branchName as string;
     return withProgress(messageRouter, async () => {
-      await gitService.checkout(branchName);
+      const result = await tryCheckout(gitService, branchName);
+      if (result.success) {
+        messageRouter.broadcastEvent("gitStateChanged", { scope: "all" });
+      }
+      return result;
+    });
+  });
+
+  messageRouter.handle("checkoutResolveLocalChanges", async (params) => {
+    if (!gitService) return NOT_GIT_REPO;
+    const branchName = params.branchName as string;
+    const mode = params.mode as "smart" | "force";
+    return withProgress(messageRouter, async () => {
+      if (mode === "force") {
+        await gitService.forceCheckout(branchName);
+      } else {
+        await gitService.smartCheckout(branchName);
+      }
       messageRouter.broadcastEvent("gitStateChanged", { scope: "all" });
       return { success: true };
+    });
+  });
+
+  messageRouter.handle("checkoutRemoteBranch", async (params) => {
+    if (!gitService) return NOT_GIT_REPO;
+    const remoteBranch = params.branchName as string;
+    // "origin/feature/x" -> "feature/x"
+    const localName = remoteBranch.substring(remoteBranch.indexOf("/") + 1);
+    return withProgress(messageRouter, async () => {
+      // A local branch with the same name may already exist (checked out
+      // before). In that case switch to it instead of failing on
+      // `git branch <name> <remote>`, which errors out with
+      // "a branch named 'x' already exists".
+      if (!(await gitService.branchExists(localName))) {
+        await gitService.createBranch(localName, remoteBranch, false);
+      }
+      const result = await tryCheckout(gitService, localName);
+      if (result.success) {
+        messageRouter.broadcastEvent("gitStateChanged", { scope: "all" });
+      }
+      return result;
     });
   });
 

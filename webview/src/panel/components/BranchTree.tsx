@@ -7,6 +7,7 @@ import { usePreventSelect } from "../../shared/hooks/usePreventSelect";
 import { usePanelStore } from "../../shared/store/panel-store";
 import type { BranchInfo, TagInfo } from "../../shared/types/git";
 import { BranchSidebar as BranchSidebarComponent } from "./BranchSidebar";
+import { CheckoutConflictDialog } from "./CheckoutConflictDialog";
 import { CreateBranchDialog } from "./CreateBranchDialog";
 import { PushDialog } from "./PushDialog";
 
@@ -331,6 +332,11 @@ export function BranchTree({
   // Push dialog state
   const [pushDialog, setPushDialog] = useState<{
     branchName: string;
+  } | null>(null);
+
+  // Checkout blocked by uncommitted changes
+  const [checkoutConflict, setCheckoutConflict] = useState<{
+    targetBranch: string;
   } | null>(null);
 
   const handleContextMenu = useCallback(
@@ -667,6 +673,26 @@ export function BranchTree({
               onPush={(branchName) => {
                 closeContextMenu();
                 setPushDialog({ branchName });
+              }}
+              onCheckoutConflict={(targetBranch) => {
+                setCheckoutConflict({ targetBranch });
+              }}
+            />,
+            document.body,
+          )}
+
+        {/* Checkout Conflict Dialog */}
+        {checkoutConflict &&
+          createPortal(
+            <CheckoutConflictDialog
+              targetBranch={checkoutConflict.targetBranch}
+              onCancel={() => setCheckoutConflict(null)}
+              onResolve={async (mode) => {
+                await bridgeWithProgress("checkoutResolveLocalChanges", {
+                  branchName: checkoutConflict.targetBranch,
+                  mode,
+                });
+                setCheckoutConflict(null);
               }}
             />,
             document.body,
@@ -1039,6 +1065,7 @@ function BranchContextMenu({
   onClose,
   onCreateBranch,
   onPush,
+  onCheckoutConflict,
 }: {
   x: number;
   y: number;
@@ -1047,6 +1074,7 @@ function BranchContextMenu({
   onClose: () => void;
   onCreateBranch: (startPoint: string, defaultName: string) => void;
   onPush: (branchName: string) => void;
+  onCheckoutConflict: (targetBranch: string) => void;
 }) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<{
@@ -1136,19 +1164,24 @@ function BranchContextMenu({
   const handleCheckout = async () => {
     onClose();
     try {
-      if (branch.isRemote) {
-        // For remote branches like "origin/dev", create a local tracking branch "dev"
-        const localName = branch.name.substring(branch.name.indexOf("/") + 1);
-        await bridgeWithProgress("createBranch", {
-          newBranchName: localName,
-          startPoint: branch.name,
-          checkout: true,
-        });
-      } else {
-        await bridgeWithProgress("checkoutBranch", { branchName: branch.name });
+      // Creates a local tracking branch for remote refs, or switches to the
+      // existing local branch when one with the same name is already present
+      const result = (await bridgeWithProgress(
+        branch.isRemote ? "checkoutRemoteBranch" : "checkoutBranch",
+        { branchName: branch.name },
+      )) as
+        | { success: true }
+        | { success: false; needsDecision: true; targetBranch: string }
+        | undefined;
+
+      if (result && !result.success && result.needsDecision) {
+        onCheckoutConflict(result.targetBranch);
       }
     } catch (err) {
-      console.error("Checkout failed:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      void bridge.request("showErrorNotification", {
+        message: `Checkout failed: ${message}`,
+      });
     }
   };
 

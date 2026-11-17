@@ -602,6 +602,65 @@ export class GitService {
     this.invalidateCache();
   }
 
+  async branchExists(branchName: string): Promise<boolean> {
+    try {
+      await this.execGit([
+        "rev-parse",
+        "--verify",
+        "--quiet",
+        `refs/heads/${branchName}`,
+      ]);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /** True when `git checkout` refused because of uncommitted changes */
+  static isLocalChangesConflict(message: string): boolean {
+    return /would be overwritten|Please commit your changes or stash them/i.test(
+      message,
+    );
+  }
+
+  /**
+   * IDEA-style Smart Checkout: stash local changes, switch, then restore them.
+   * The stash is kept if restoring fails so nothing is lost.
+   */
+  async smartCheckout(branchName: string): Promise<void> {
+    await this.execGit(["stash", "push", "-m", "smart-checkout-autostash"]);
+
+    try {
+      await this.execGit(["checkout", branchName]);
+    } catch (err) {
+      try {
+        await this.execGit(["stash", "pop"]);
+      } catch {
+        // Stash is preserved; the user can restore it manually.
+      }
+      throw err;
+    }
+
+    try {
+      await this.execGit(["stash", "pop"]);
+    } catch (err) {
+      const detail = err instanceof Error ? err.message : String(err);
+      throw new Error(
+        `Switched to '${branchName}', but your local changes could not be re-applied automatically. ` +
+          `Resolve the conflicts in the working tree, or run "git checkout -- ." to discard them. ` +
+          `Your original changes are kept in the stash "smart-checkout-autostash".\n${detail}`,
+      );
+    }
+
+    this.invalidateCache();
+  }
+
+  /** Discard local changes and switch (IDEA's "Force Checkout") */
+  async forceCheckout(branchName: string): Promise<void> {
+    await this.execGit(["checkout", "-f", branchName]);
+    this.invalidateCache();
+  }
+
   async createBranch(
     newBranchName: string,
     startPoint: string,
