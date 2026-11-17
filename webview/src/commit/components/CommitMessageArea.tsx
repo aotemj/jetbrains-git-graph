@@ -4,6 +4,7 @@ import { bridge } from "../../shared/bridge";
 import { Tooltip } from "../../shared/components/Tooltip";
 import "../../shared/components/Tooltip.css";
 import { useCommitStore } from "../../shared/store/commit-store";
+import { CommitTemplateDialog } from "./CommitTemplateDialog";
 
 export function CommitMessageArea() {
   const {
@@ -18,6 +19,7 @@ export function CommitMessageArea() {
 
   const [showDropdown, setShowDropdown] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showTemplate, setShowTemplate] = useState(false);
   const [recentMessages, setRecentMessages] = useState<string[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const historyBtnRef = useRef<HTMLSpanElement>(null);
@@ -114,6 +116,38 @@ export function CommitMessageArea() {
           />
           Amend
         </label>
+        <button
+          type="button"
+          onClick={() => setShowTemplate(true)}
+          title="Fill from commit message template"
+          style={{
+            marginLeft: "auto",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            background: "transparent",
+            border: "none",
+            borderRadius: 3,
+            padding: "2px 5px",
+            fontSize: 11,
+            color: "var(--description-fg)",
+            cursor: "pointer",
+            opacity: 0.75,
+            transition: "opacity 0.15s, background 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = "1";
+            e.currentTarget.style.background =
+              "var(--vscode-toolbar-hoverBackground, rgba(0,0,0,0.08))";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = "0.75";
+            e.currentTarget.style.background = "transparent";
+          }}
+        >
+          <TemplateIcon />
+          Template
+        </button>
         <Tooltip text="Recent commit messages">
           <span
             ref={historyBtnRef}
@@ -223,6 +257,13 @@ export function CommitMessageArea() {
           )}
         </div>
       </div>
+
+      {showTemplate && (
+        <CommitTemplateDialog
+          onClose={() => setShowTemplate(false)}
+          onApply={setCommitMessage}
+        />
+      )}
     </div>
   );
 }
@@ -333,6 +374,22 @@ const HistoryDropdown = React.forwardRef<HTMLDivElement, HistoryDropdownProps>(
     );
   },
 );
+
+function TemplateIcon() {
+  return (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+    >
+      <rect x="2.5" y="1.5" width="11" height="13" rx="1.5" />
+      <path d="M5 5h6M5 8h6M5 11h4" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 function HistoryIcon() {
   return (
